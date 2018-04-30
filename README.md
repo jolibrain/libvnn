@@ -15,6 +15,7 @@ Operation to compare:  **Video frame downsizing**
 Input:
 - 4K  / MP4 / duration? / Colorspace? **TBD**
 - 2K / MP4 / duration? / Colorspace?
+
 Output:
 - 300x300 / raw / RGB **TBD** 	
      	
