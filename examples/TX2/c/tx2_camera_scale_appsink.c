@@ -14,6 +14,9 @@
 
 #include <gst/app/gstappsink.h>
 
+#include <iostream>
+#include <chrono>
+#include <ctime>
 
 /* these are the caps we are going to pass through the appsink */
 const gchar *video_caps =
@@ -24,6 +27,7 @@ typedef struct
 {
   GMainLoop *loop;
   GstElement *source;
+  std::chrono::time_point<std::chrono::system_clock> timestamp;
 } ProgramData;
 
 /* called when the appsink notifies us that there is a new buffer ready for
@@ -35,19 +39,30 @@ on_new_sample_from_sink (GstElement * elt, ProgramData * data)
   GstBuffer *app_buffer, *buffer;
   GstElement *source;
   GstFlowReturn ret;
+  GstMemory *memory;
 
+  std::chrono::time_point<std::chrono::system_clock> timestamp;
+  timestamp = std::chrono::system_clock::now();
+  std::time_t ts_time = std::chrono::system_clock::to_time_t(timestamp);
+
+  int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp - data->timestamp).count();
+
+  std::cout << "elapsed " << elapsed_seconds <<"\n" ;
+  std::cout << "FPS " << (1.0/elapsed_seconds)*1000 <<"\n" ;
+  data->timestamp = timestamp;
   /* get the sample from appsink */
   sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
   buffer = gst_sample_get_buffer (sample);
 
+  std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
   /* make a copy */
   app_buffer = gst_buffer_copy (buffer);
 
-  g_print ("*");
+  //g_print ("*");
   /* we don't need the appsink sample anymore */
   gst_sample_unref (sample);
 
-  return 0;
+  return GST_FLOW_OK;
 }
 
 /* called when we get a GstMessage from the source pipeline when we get EOS */
@@ -134,12 +149,13 @@ main (int argc, char *argv[])
    * and we pull out the data in the signal callback. We want the appsink to
    * push as fast as it can, hence the sync=false */
   testsink = gst_bin_get_by_name (GST_BIN (data->source), "testsink");
-  g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", FALSE, NULL);
+  g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", TRUE, NULL);
   g_signal_connect (testsink, "new-sample",
       G_CALLBACK (on_new_sample_from_sink), data);
   gst_object_unref (testsink);
 
   /* launching things */
+  data->timestamp = std::chrono::system_clock::now();
   gst_element_set_state (data->source, GST_STATE_PLAYING);
 
   /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
