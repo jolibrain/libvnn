@@ -20,7 +20,7 @@
 
 /* these are the caps we are going to pass through the appsink */
 const gchar *video_caps =
-    "video/x-raw(memory:NVMM), width=(int)300, height=(int)300, format=(string)I420";
+    "video/x-raw(memory:NVMM), width=(int)300, height=(int)300, format=(string)RGBA";
 
 
 typedef struct
