@@ -16,6 +16,8 @@ using namespace std;
 static GstPipeline *gst_pipeline = nullptr;
 static string launch_string;   
 
+static chrono::time_point<std::chrono::system_clock> g_timestamp;
+
 static void appsink_eos(GstAppSink * appsink, gpointer user_data)
 {
     printf("app sink receive eos\n");
@@ -26,6 +28,13 @@ static GstFlowReturn new_buffer(GstAppSink *appsink, gpointer user_data)
 {
     GstSample *sample = NULL;
 
+    chrono::time_point<chrono::system_clock> timestamp;
+    timestamp = chrono::system_clock::now();
+
+    int elapsed_ms = chrono::duration_cast<chrono::milliseconds>(timestamp - g_timestamp).count();
+
+    cout << "FPS " << (1.0/elapsed_ms)*1000 <<"\n" ;
+    g_timestamp = timestamp;
     g_signal_emit_by_name (appsink, "pull-sample", &sample,NULL);
 
     if (sample)
@@ -66,15 +75,17 @@ int main(int argc, char** argv) {
     GMainLoop *main_loop;
     main_loop = g_main_loop_new (NULL, FALSE);
     ostringstream launch_stream;
-    int w = 1920;
-    int h = 1080;
+    int w = 4208;
+    int h = 3120;
+    int w_scale = 300;
+    int h_scale = 300;
     GstAppSinkCallbacks callbacks = {appsink_eos, NULL, new_buffer};
 
     launch_stream
     << "nvcamerasrc ! "
     << "video/x-raw(memory:NVMM), width="<< w <<", height="<< h <<", framerate=30/1 ! " 
     << "nvvidconv ! "
-    << "video/x-raw, format=I420, width="<< w <<", height="<< h <<" ! "
+    << "video/x-raw, format=RGBA, width="<< w_scale <<", height="<< h_scale <<" ! "
     << "appsink name=mysink ";
 
     launch_string = launch_stream.str();
@@ -95,6 +106,7 @@ int main(int argc, char** argv) {
 
     gst_element_set_state((GstElement*)gst_pipeline, GST_STATE_PLAYING); 
 
+    g_timestamp = chrono::system_clock::now();
     sleep(10);
     //g_main_loop_run (main_loop);
 
