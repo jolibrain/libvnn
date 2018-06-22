@@ -22,17 +22,29 @@
 #ifndef STREAMLIBGSTREAMERDESKTOP_H
 #define STREAMLIBGSTREAMERDESKTOP_H
 
+#include <string>
 #include "streamlib.h"
 
 namespace vnn
 {
-
-  class StreamLibGstreamerDesktop: public StreamLib
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    class StreamLibGstreamerDesktop: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
   {
-      public:
-          StreamLibGstreamerDesktop() {}
-          ~StreamLibGstreamerDesktop() {}
-          int init();
+    public:
+      StreamLibGstreamerDesktop() {}
+      ~StreamLibGstreamerDesktop() {}
+      int init();
+      int run();
+      int stop();
+
+    private:
+
+      /* pipe to reproduct
+       * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
+       */
+      /* these are the caps we are going to pass through the appsink */
+      std::string _video_caps =
+        "video/x-raw,width=300,height=300,format=YUY2";
   };
 
 #if 0

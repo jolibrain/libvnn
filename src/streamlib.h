@@ -25,14 +25,19 @@
 namespace vnn
 {
 
-  class StreamLib
-  {
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    class StreamLib
+    {
       public:
-          StreamLib() {}
-          ~StreamLib() {}
-          void init(   )
-    {};
-  };
+        StreamLib() {}
+        ~StreamLib() {}
+
+        int init( )
+        {  return 0;};
+
+        TInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
+        TOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
+    };
 
 #if 0
   class GstreamerTX2: StreamLib

@@ -26,13 +26,7 @@
 #include <chrono>
 #include <iostream>
 namespace vnn {
-    /* pipe to reproduct
-     * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
-     */
 
-    /* these are the caps we are going to pass through the appsink */
-    const gchar *video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
 
 
     typedef struct
@@ -41,36 +35,36 @@ namespace vnn {
         GstElement *source;
         std::chrono::time_point<std::chrono::system_clock> timestamp;
     } ProgramData;
+    ProgramData * _program_data;
 
     /* called when the appsink notifies us that there is a new buffer ready for
      * processing */
-    static GstFlowReturn
-        on_new_sample_from_sink (GstElement * elt, ProgramData * data)
-        {
-            GstSample *sample;
-            GstBuffer *buffer;
+    static GstFlowReturn on_new_sample_from_sink (GstElement * elt, ProgramData * data)
+    {
+        GstSample *sample;
+        GstBuffer *buffer;
 
-            std::chrono::time_point<std::chrono::system_clock> timestamp;
-            timestamp = std::chrono::system_clock::now();
+        std::chrono::time_point<std::chrono::system_clock> timestamp;
+        timestamp = std::chrono::system_clock::now();
 
-            int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp - data->timestamp).count();
-            std::cout << "elapsed " << elapsed_seconds <<"\n" ;
-            std::cout << "FPS " << (1.0/elapsed_seconds)*1000 <<"\n" ;
-            data->timestamp = timestamp;
+        int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp - data->timestamp).count();
+        std::cout << "elapsed " << elapsed_seconds <<"\n" ;
+        std::cout << "FPS " << (1.0/elapsed_seconds)*1000 <<"\n" ;
+        data->timestamp = timestamp;
 
-            /* get the sample from appsink */
-            sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
-            buffer = gst_sample_get_buffer (sample);
+        /* get the sample from appsink */
+        sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
+        buffer = gst_sample_get_buffer (sample);
 
-            std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
-            /* make a copy */
-            //app_buffer = gst_buffer_copy (buffer);
+        std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
+        /* make a copy */
+        //app_buffer = gst_buffer_copy (buffer);
 
-            /* we don't need the appsink sample anymore */
-            gst_sample_unref (sample);
+        /* we don't need the appsink sample anymore */
+        gst_sample_unref (sample);
 
-            return GST_FLOW_OK;
-        }
+        return GST_FLOW_OK;
+    }
 
     /* called when we get a GstMessage from the source pipeline when we get EOS */
     static gboolean
@@ -90,40 +84,19 @@ namespace vnn {
                     break;
             }
             return TRUE;
-        }
-
-    /* called when we get a GstMessage from the sink pipeline when we get EOS, we
-     * exit the mainloop and this testapp. */
-    static gboolean
-        on_sink_message (GstBus * bus, GstMessage * message, ProgramData * data)
-        {
-            /* nil */
-            switch (GST_MESSAGE_TYPE (message)) {
-                case GST_MESSAGE_EOS:
-                    g_print ("Finished playback\n");
-                    g_main_loop_quit (data->loop);
-                    break;
-                case GST_MESSAGE_ERROR:
-                    g_print ("Received error\n");
-                    g_main_loop_quit (data->loop);
-                    break;
-                default:
-                    break;
-            }
-            return TRUE;
-        }
+        };
 
 
-    int StreamLibGstreamerDesktop::init()
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::init()
     {
-        int argc;
-        char **argv[10];
         ProgramData *data = NULL;
         gchar *string = NULL;
         GstBus *bus = NULL;
         GstElement *testsink = NULL;
 
 
+        gst_init(nullptr, nullptr);
         data = g_new0 (ProgramData, 1);
 
         data->loop = g_main_loop_new (NULL, FALSE);
@@ -134,7 +107,7 @@ namespace vnn {
             g_strdup_printf
             //("videotestsrc num_buffers=15 ! appsink caps=\"%s\" name=testsink",
             ("v4l2src  num_buffers=15 ! video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1 ! videoscale ! appsink caps=\"%s\" name=testsink",
-             video_caps);
+             (gchar *)  StreamLibGstreamerDesktop::_video_caps.c_str());
         data->source = gst_parse_launch (string, NULL);
         g_free (string);
 
@@ -159,13 +132,30 @@ namespace vnn {
                 G_CALLBACK (on_new_sample_from_sink), data);
         gst_object_unref (testsink);
 
-        /* launching things */
-        data->timestamp = std::chrono::system_clock::now();
-        gst_element_set_state (data->source, GST_STATE_PLAYING);
-
-
-        gst_init(&argc, argv);
-        return 0 ;
+        _program_data = data;
+        return 0;
     };
 
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::run()
+    {
+
+        /* launching things */
+        _program_data->timestamp = std::chrono::system_clock::now();
+        gst_element_set_state (_program_data->source, GST_STATE_PLAYING);
+        /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
+         * error occurs in the source or sink pipelines. */
+        g_print ("Let's run!\n");
+        g_main_loop_run (_program_data->loop);
+        g_print ("Going out\n");
+        return 0;
+    }
+
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::stop()
+    {
+        return 0;
+    }
+
 }
+
