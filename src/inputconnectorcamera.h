@@ -31,6 +31,10 @@ namespace vnn
     {
         public:
             void init();
+
+      std::string input_command() {
+        return "v4l2src num_buffers=15 ! video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1";
+      }
     };
 
 

@@ -19,26 +19,20 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INPUTCONNECTORSTRATEGY_H
-#define INPUTCONNACTORSTRATEGY_H
-#include <string>
+#include "streamlib.h"
+#include "inputconnectorcamera.h"
+#include "outputconnectorstrategy.h"
 
-namespace vnn
+using namespace vnn;
+
+int main ()
 {
-  class InputConnector
-  {
-    public:
-      InputConnector() {}
-      ~InputConnector() {}
 
-      /**
-       * \brief return input command to apply to streamlib
-       */
-      std::string input_command();
-  };
+  StreamLib <InputConnectorCamera,OutputConnector>  my_streamlib;
 
-
+  my_streamlib.init();
+  return 4;
 
 }
-#endif
+
 

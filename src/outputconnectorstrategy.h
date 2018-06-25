@@ -19,22 +19,21 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INPUTCONNECTORSTRATEGY_H
-#define INPUTCONNACTORSTRATEGY_H
-#include <string>
+#ifndef OUTPUTCONNECTORSTRATEGY_H
+#define OUTPUTCONNACTORSTRATEGY_H
 
 namespace vnn
 {
-  class InputConnector
+  class OutputConnector
   {
     public:
-      InputConnector() {}
-      ~InputConnector() {}
+      OutputConnector() {}
+      ~OutputConnector() {}
 
       /**
-       * \brief return input command to apply to streamlib
+       * \brief return output command to apply to streamlib
        */
-      std::string input_command();
+      std::string output_command();
   };
 
 

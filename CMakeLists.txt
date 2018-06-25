@@ -29,5 +29,6 @@ set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory (src)
+add_subdirectory (examples)
 
 
