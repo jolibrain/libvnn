@@ -19,18 +19,23 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "streamlib.h"
+//#include "streamlib.h"
+#include "streamlibgstreamerdesktop.h"
 #include "inputconnectorcamera.h"
-#include "outputconnectorstrategy.h"
+#include "outputconnectordummy.h"
 
 using namespace vnn;
 
 int main ()
 {
 
-  StreamLib <InputConnectorCamera,OutputConnector>  my_streamlib;
+  StreamLibGstreamerDesktop<InputConnectorCamera,OutputConnectorDummy>  my_streamlib;
+ // StreamLib <InputConnectorCamera,OutputConnector>  my_streamlib;
 
   my_streamlib.init();
+  my_streamlib.run();
+  my_streamlib.stop();
+
   return 4;
 
 }

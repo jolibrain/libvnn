@@ -24,11 +24,11 @@
 
 namespace vnn
 {
-  class OutputConnector
+  class OutputConnectorStrategy
   {
     public:
-      OutputConnector() {}
-      ~OutputConnector() {}
+      OutputConnectorStrategy() {}
+      ~OutputConnectorStrategy() {}
 
       /**
        * \brief return output command to apply to streamlib

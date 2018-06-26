@@ -21,6 +21,8 @@
 
 
 #include "streamlibgstreamerdesktop.h"
+#include "inputconnectorcamera.h"
+#include "outputconnectordummy.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <chrono>
@@ -157,5 +159,7 @@ namespace vnn {
         return 0;
     }
 
+
+template class StreamLibGstreamerDesktop<InputConnectorCamera, OutputConnectorDummy>;
 }
 

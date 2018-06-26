@@ -35,6 +35,10 @@ namespace vnn
         int init( )
         {  return 0;};
 
+        int run()
+        {  return 0;};
+        int stop()
+        {  return 0;};
         TInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
         TOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
     };

@@ -19,25 +19,27 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INPUTCONNECTORCAMERA_H
-#define INPUTCONNECTORCAMERA_H
-
-#include "inputconnectorstrategy.h"
+#ifndef OUTPUTCONNECTORDUMMY_H
+#define OUTPUTCONNACTORDUMMY_H
+#include "outputconnectorstrategy.h"
 
 namespace vnn
 {
-
-  class InputConnectorCamera: public InputConnectorStrategy
+  class OutputConnectorDummy: public OutputConnectorStrategy
   {
     public:
-      InputConnectorCamera() {};
-      ~InputConnectorCamera() {};
-      void init();
+      OutputConnectorDummy() {}
+      ~OutputConnectorDummy() {}
 
-      std::string input_command() {
-        return "v4l2src num_buffers=15 ! video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1";
+      /**
+       * \brief return output command to apply to streamlib
+       */
+      std::string output_command()
+      {
+        return "dummy\n";
       }
   };
+
 
 
 }

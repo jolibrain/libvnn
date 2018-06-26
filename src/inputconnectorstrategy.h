@@ -25,19 +25,17 @@
 
 namespace vnn
 {
-  class InputConnector
+  class InputConnectorStrategy
   {
     public:
-      InputConnector() {}
-      ~InputConnector() {}
+      InputConnectorStrategy() {};
+      ~InputConnectorStrategy() {};
 
       /**
        * \brief return input command to apply to streamlib
        */
       std::string input_command();
   };
-
-
 
 }
 #endif
