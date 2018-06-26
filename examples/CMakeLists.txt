@@ -1,4 +1,5 @@
-#include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Gobject_INCLUDE_DIRS})
 #link_directories(${CAFFE_LIB_DIR} ${XGBOOST_LIB_DIR} ${TF_LIB_DIR} ${TSNE_LIB_DIR})
 
 if (CUDA_FOUND)
@@ -32,8 +33,9 @@ endif()
 if (USE_TSNE)
   set(TSNE_LIB_DEPS -ltsne_multicore)
 endif()
-set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++11 -pthread -I/usr/include/gstreamer-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0  ")
 
+
+set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++11 -pthread")
 
 add_executable (my_example my_example.cc)
-target_link_libraries (my_example vnn ${CUDA_LIB_DEPS} )
+target_link_libraries (my_example vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )

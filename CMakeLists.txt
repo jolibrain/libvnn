@@ -24,8 +24,10 @@ include_directories(${GSTREAMER_INCLUDE_DIR})
 message(STATUS "Gstreamer include dir = ${GSTREAMER_INCLUDE_DIR} ")
 message(STATUS "Gstreamer library = ${GSTREAMER_LIBRARY} ")
 
-set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11
- $(pkg-config --cflags --libs gstreamer-app-1.0)")
+set (Gobject_INCLUDE_DIRS "/usr/include/glib-2.0 /usr/lib/x86_64-linux-gnu/glib-2.0/include/")
+
+set (GSTREAMER_APP_LIB_DEPS -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0)
+set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11 $(pkg-config --cflags --libs gstreamer-app-1.0)")
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory (src)

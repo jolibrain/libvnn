@@ -30,7 +30,7 @@ ENDIF (NOT WIN32)
 
 FIND_PATH(GOBJECT_INCLUDE_DIR gobject/gobject.h
    HINTS ${PKG_GOBJECT2_INCLUDE_DIRS} ${PKG_GOBJECT2_INCLUDEDIR}
-   PATHS /usr/include/glib-2.0/ /usr/lib/x86_64-linux-gnu/glib-2.0/include/
+   PATHS /usr/include/glib-2.0/
    PATH_SUFFIXES glib-2.0
    )
 
