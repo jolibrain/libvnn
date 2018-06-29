@@ -21,7 +21,7 @@
 
 
 #include <cstdlib>
-#include "streamlibgstreamerdesktop.h"
+#include "streamlibgstreamertx2.h"
 #include "inputconnectorcamera.h"
 #include "outputconnectordummy.h"
 #include <gst/gst.h>
@@ -93,7 +93,7 @@ namespace vnn {
 
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::init()
+    int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::init()
     {
         ProgramData *data = NULL;
         GstBus *bus = NULL;
@@ -101,18 +101,24 @@ namespace vnn {
         std::ostringstream launch_stream;
         GError *error = nullptr;
         std::string launch_string;
+        int w = 4208;
+        int h = 3120;
+        int w_scale = 300;
+        int h_scale = 300;
 
         gst_init(nullptr, nullptr);
         data = g_new0 (ProgramData, 1);
 
         data->loop = g_main_loop_new (NULL, FALSE);
 
+
         launch_stream
-        << "v4l2src  num_buffers=15 !"
-        << " video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1 !"
-        << " videoscale !"
-        << " appsink caps=" << StreamLibGstreamerDesktop::_video_caps.c_str()
-        << " name=testsink";
+          << "nvcamerasrc ! "
+          << "video/x-raw(memory:NVMM), width="<< w <<", height="<< h <<", framerate=30/1 ! "
+          << "nvvidconv ! "
+          << "video/x-raw, format=RGBA, width="<< w_scale <<", height="<< h_scale <<" ! "
+          << "appsink name=testsink";
+
 
         launch_string = launch_stream.str();
 
@@ -146,7 +152,7 @@ namespace vnn {
     };
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::run()
+    int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::run()
     {
 
         /* launching things */
@@ -161,12 +167,12 @@ namespace vnn {
     }
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::stop()
+    int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::stop()
     {
         return 0;
     }
 
 
-template class StreamLibGstreamerDesktop<InputConnectorCamera, OutputConnectorDummy>;
+template class StreamLibGstreamerTX2<InputConnectorCamera, OutputConnectorDummy>;
 }
 

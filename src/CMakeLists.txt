@@ -19,6 +19,8 @@ set(vnn_SOURCES  vnnvideostream.h
 		    streamlibgstreamerdesktop.cc
 		    outputconnectorstrategy.h
 		    outputconnectordummy.h
+		    streamlibgstreamertx2.h
+		    streamlibgstreamertx2.cc
 		    )
 
 add_library(vnn ${vnn_SOURCES})

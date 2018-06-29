@@ -12,7 +12,6 @@ find_package(PkgConfig)
 
 find_package(GObject REQUIRED)
 include_directories(${GOBJECT_INCLUDE_DIR})
-include_directories("/usr/lib/x86_64-linux-gnu/glib-2.0/include/")
 message(STATUS "GObject include dir = ${GOBJECT_INCLUDE_DIR} ")
 message(STATUS "GObject library = ${GOBJECT_LIBRARIES} ")
 
@@ -24,12 +23,19 @@ include_directories(${GSTREAMER_INCLUDE_DIR})
 message(STATUS "Gstreamer include dir = ${GSTREAMER_INCLUDE_DIR} ")
 message(STATUS "Gstreamer library = ${GSTREAMER_LIBRARY} ")
 
-set (Gobject_INCLUDE_DIRS "/usr/include/glib-2.0 /usr/lib/x86_64-linux-gnu/glib-2.0/include/")
+if (USE_TX2)
+	include_directories("/usr/lib/aarch64-linux-gnu/glib-2.0/include/")
+	include_directories("/usr/lib/aarch64-linux-gnu/gstreamer-1.0/include/")
+else()
+	include_directories("/usr/lib/x86_64-linux-gnu/glib-2.0/include/")
+	include_directories("/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include/")
+endif()
 
 set (GSTREAMER_APP_LIB_DEPS -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0)
 set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11 $(pkg-config --cflags --libs gstreamer-app-1.0)")
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
-include_directories ("${Gobject_INCLUDE_DIRS}")
 add_subdirectory (src)
 add_subdirectory (examples)
+
+

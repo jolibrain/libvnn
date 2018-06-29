@@ -39,3 +39,6 @@ set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++11 -pthread")
 
 add_executable (my_example my_example.cc)
 target_link_libraries (my_example vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
+
+add_executable (my_example_tx2 my_example_tx2.cc)
+target_link_libraries (my_example_tx2 vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
