@@ -30,7 +30,6 @@ set (GSTREAMER_APP_LIB_DEPS -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject
 set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11 $(pkg-config --cflags --libs gstreamer-app-1.0)")
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
+include_directories ("${Gobject_INCLUDE_DIRS}")
 add_subdirectory (src)
 add_subdirectory (examples)
-
-
