@@ -22,8 +22,12 @@
 #ifndef STREAMLIB_H
 #define STREAMLIB_H
 
+#include <functional>
+
 namespace vnn
 {
+
+  typedef std::function<int (long unsigned int, unsigned char * )> BufferCbFunc;
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
     class StreamLib
@@ -42,6 +46,10 @@ namespace vnn
         TInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
         TOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
     };
+/**
+     * \brief sets the gradient function, if available.
+     * @param gfunc gradient function
+     */
 
 #if 0
   class GstreamerTX2: StreamLib

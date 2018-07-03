@@ -39,11 +39,19 @@ namespace vnn {
         GMainLoop *loop;
         GstElement *source;
         std::chrono::time_point<std::chrono::system_clock> timestamp;
+        BufferCbFunc _buffercb;
     } ProgramData;
     ProgramData * _program_data;
 
     /* called when the appsink notifies us that there is a new buffer ready for
      * processing */
+  int dummy_callback( long unsigned int size , unsigned char * data )
+    {
+        std::cout << "cb map.size =  " << size <<  std::endl;
+        std::cout << "cb map.data =  " <<  static_cast<void*>(data) << std::endl;
+      return 0;
+    }
+
     static GstFlowReturn on_new_sample_from_sink (GstElement * elt, ProgramData * data)
     {
         GstSample *sample;
@@ -62,8 +70,14 @@ namespace vnn {
         buffer = gst_sample_get_buffer (sample);
 
         std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
+        std::cout << "address =  " << static_cast<void*>(buffer) << std::endl;
         /* make a copy */
         //app_buffer = gst_buffer_copy (buffer);
+        GstMapInfo map;
+        gst_buffer_map (buffer, &map, GST_MAP_READ);
+        std::cout << "map.size =  " << map.size <<"\n" ;
+        std::cout << "map.data =  " <<  static_cast<void*>(map.data) <<"\n" ;
+        data->_buffercb(map.size, map.data);
 
         /* we don't need the appsink sample anymore */
         gst_sample_unref (sample);
@@ -101,6 +115,10 @@ namespace vnn {
         std::ostringstream launch_stream;
         GError *error = nullptr;
         std::string launch_string;
+
+        this->_input.init();
+        this->_output.init();
+
 
         gst_init(nullptr, nullptr);
         data = g_new0 (ProgramData, 1);
@@ -165,6 +183,15 @@ namespace vnn {
     {
         return 0;
     }
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    void StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::set_buffer_cb(BufferCbFunc &buffercb)
+    
+
+    {
+      this->_buffercb = buffercb;
+      _program_data->_buffercb = buffercb;
+    }
+
 
 
 template class StreamLibGstreamerDesktop<InputConnectorCamera, OutputConnectorDummy>;

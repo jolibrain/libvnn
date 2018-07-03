@@ -31,6 +31,8 @@ namespace vnn
       InputConnectorStrategy() {};
       ~InputConnectorStrategy() {};
 
+      void init();
+
       /**
        * \brief return input command to apply to streamlib
        */

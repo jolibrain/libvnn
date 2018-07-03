@@ -21,12 +21,13 @@
 
 
 #include "inputconnectorcamera.h"
+#include <iostream>
 
 namespace vnn {
 
     void InputConnectorCamera::init()
     {
-    return ;
+      std::cout << "enter InputConnectorCamera::init \n";
     };
 
 }

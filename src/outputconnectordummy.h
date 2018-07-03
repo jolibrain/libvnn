@@ -20,24 +20,33 @@
  */
 
 #ifndef OUTPUTCONNECTORDUMMY_H
-#define OUTPUTCONNACTORDUMMY_H
+#define OUTPUTCONNECTORDUMMY_H
+
+
+
 #include "outputconnectorstrategy.h"
+#include <string>
+#include <functional>
 
 namespace vnn
 {
+  typedef std::function<int (void)> SizeFunc;
+
+
   class OutputConnectorDummy: public OutputConnectorStrategy
   {
     public:
-      OutputConnectorDummy() {}
+      OutputConnectorDummy(){}
+      OutputConnectorDummy(SizeFunc &func);
       ~OutputConnectorDummy() {}
 
+      void init();
       /**
        * \brief return output command to apply to streamlib
        */
-      std::string output_command()
-      {
-        return "dummy\n";
-      }
+      std::string output_command();
+    protected:
+      SizeFunc _szfunc = nullptr;
   };
 
 

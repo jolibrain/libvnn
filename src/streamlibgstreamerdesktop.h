@@ -36,6 +36,11 @@ namespace vnn
       int init();
       int run();
       int stop();
+     void set_buffer_cb(BufferCbFunc &buffercb);
+
+
+    BufferCbFunc _buffercb = nullptr;
+
 
     private:
 

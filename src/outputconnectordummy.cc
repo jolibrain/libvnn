@@ -19,27 +19,24 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OUTPUTCONNECTORSTRATEGY_H
-#define OUTPUTCONNACTORSTRATEGY_H
 
+#include "outputconnectordummy.h"
 #include <string>
+#include <iostream>
 
-namespace vnn
-{
-  class OutputConnectorStrategy
-  {
-    public:
-      OutputConnectorStrategy() {}
-      ~OutputConnectorStrategy() {}
+namespace vnn {
 
-      /**
-       * \brief return output command to apply to streamlib
-       */
-      std::string output_command();
-  };
+    OutputConnectorDummy::OutputConnectorDummy(SizeFunc &func)
+      :_szfunc(func){};
+
+    void OutputConnectorDummy::init()
+    {
+      std::cout << "enter OutputConnectorDummy::init \n";
+    };
 
 
-
+   std::string OutputConnectorDummy::output_command(void)
+   {
+        return "dummy\n";
+   };
 }
-#endif
-

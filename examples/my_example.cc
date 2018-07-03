@@ -23,20 +23,28 @@
 #include "streamlibgstreamerdesktop.h"
 #include "inputconnectorcamera.h"
 #include "outputconnectordummy.h"
+#include <iostream>
 
 using namespace vnn;
+
+BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
+    {
+        std::cout << "cb map.size =  " << size <<  std::endl;
+        std::cout << "cb map.data =  " <<  static_cast<void*>(data) << std::endl;
+      return 0;
+    };
 
 int main ()
 {
 
   StreamLibGstreamerDesktop<InputConnectorCamera,OutputConnectorDummy>  my_streamlib;
- // StreamLib <InputConnectorCamera,OutputConnector>  my_streamlib;
 
   my_streamlib.init();
+  my_streamlib.set_buffer_cb(dummy_callback);
   my_streamlib.run();
   my_streamlib.stop();
 
-  return 4;
+  return 0;
 
 }
 
