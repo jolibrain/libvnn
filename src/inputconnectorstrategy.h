@@ -34,9 +34,9 @@ namespace vnn
       void init();
 
       /**
-       * \brief return input command to apply to streamlib
+       * \brief returns the stream input
        */
-      std::string input_command();
+      std::string get_input_stream();
   };
 
 }

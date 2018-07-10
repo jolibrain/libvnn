@@ -115,6 +115,8 @@ namespace vnn {
         std::ostringstream launch_stream;
         GError *error = nullptr;
         std::string launch_string;
+        std::string input_stream;
+
 
         this->_input.init();
         this->_output.init();
@@ -125,9 +127,13 @@ namespace vnn {
 
         data->loop = g_main_loop_new (NULL, FALSE);
 
+        input_stream = this->_input.get_input_stream();
+
+        std::cout << "input stream =  " << input_stream <<  std::endl;
+
+
         launch_stream
-        << "v4l2src  num_buffers=15 !"
-        << " video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1 !"
+        << input_stream << " ! "
         << " videoscale !"
         << " appsink caps=" << StreamLibGstreamerDesktop::_video_caps.c_str()
         << " name=testsink";
