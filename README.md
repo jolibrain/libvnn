@@ -1,5 +1,18 @@
 # libvnn
 
+## Build instuctions
+
+Depedencies:
+```shell
+sudo apt-get install build-essential cmake libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+```
+Build with cmake:
+
+```shell
+mkdir build && cd build && cmake ..
+make -j
+```
+
 
 ## Benchmarking
 ### example: examples/TX2/c/TX2_video_scale_appsink.cpp
