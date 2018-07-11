@@ -42,3 +42,6 @@ target_link_libraries (my_example vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS}
 
 add_executable (my_example_tx2 my_example_tx2.cc)
 target_link_libraries (my_example_tx2 vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
+
+add_executable (file_desktop file_desktop.cc)
+target_link_libraries (file_desktop vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )

@@ -42,5 +42,5 @@ namespace vnn
 
 
 }
-#endif
+#endif //INPUTCONNECTORCAMERA_H
 

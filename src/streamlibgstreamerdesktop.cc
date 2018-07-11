@@ -17,12 +17,21 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ *
+ * gst-launch-1.0 filesrc location="/home/nicolas/Vidéos/bbb_60.mkv" ! decodebin ! videoscale ! videoconvert ! video/x-raw,width=300,height=300, format=YUY2 ! xvimagesink
+ *
  */
 
 
+
+
+
 #include <cstdlib>
-#include "streamlibgstreamerdesktop.h"
+
 #include "inputconnectorcamera.h"
+#include "inputconnectorfile.h"
+#include "streamlibgstreamerdesktop.h"
 #include "outputconnectordummy.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
@@ -135,6 +144,7 @@ namespace vnn {
         launch_stream
         << input_stream << " ! "
         << " videoscale !"
+        << " videoconvert !"
         << " appsink caps=" << StreamLibGstreamerDesktop::_video_caps.c_str()
         << " name=testsink";
 
@@ -201,5 +211,8 @@ namespace vnn {
 
 
 template class StreamLibGstreamerDesktop<InputConnectorCamera, OutputConnectorDummy>;
+template class StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>;
+
+  
 }
 

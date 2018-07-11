@@ -19,26 +19,35 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INPUTCONNECTORSTRATEGY_H
-#define INPUTCONNECTORSTRATEGY_H
-#include <string>
+//#include "streamlib.h"
+#include "streamlibgstreamerdesktop.h"
+#include "inputconnectorfile.h"
+#include "outputconnectordummy.h"
+#include <iostream>
 
-namespace vnn
+using namespace vnn;
+
+BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
+    {
+        std::cout << "cb map.size =  " << size <<  std::endl;
+        std::cout << "cb map.data =  " <<  static_cast<void*>(data) << std::endl;
+      return 0;
+    };
+
+int main ()
 {
-  class InputConnectorStrategy
-  {
-    public:
-      InputConnectorStrategy() {};
-      ~InputConnectorStrategy() {};
+  std::string video_path = "/home/nicolas/dev/jolibrain/bbb_60.mkv";
+  int duration =10;
 
-      void init();
+  StreamLibGstreamerDesktop<InputConnectorFile(video_path, duration, OutputConnectorDummy>  my_streamlib;
 
-      /**
-       * \brief returns the stream input
-       */
-      std::string get_input_stream();
-  };
+  my_streamlib.init();
+  my_streamlib.set_buffer_cb(dummy_callback);
+  my_streamlib.run();
+  my_streamlib.stop();
+
+  return 0;
 
 }
-#endif
+
 

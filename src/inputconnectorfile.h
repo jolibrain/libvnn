@@ -19,25 +19,30 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INPUTCONNECTORSTRATEGY_H
-#define INPUTCONNECTORSTRATEGY_H
-#include <string>
+#ifndef INPUTCONNECTORFILE_H
+#define INPUTCONNECTORFILE_H
 
+#include "inputconnectorstrategy.h"
+
+#include <string>
 namespace vnn
 {
-  class InputConnectorStrategy
+
+  class InputConnectorFile: public InputConnectorStrategy
   {
     public:
-      InputConnectorStrategy() {};
-      ~InputConnectorStrategy() {};
+      InputConnectorFile() {}
+      InputConnectorFile(const std::string & file_path, const int & duration_s)
+        : _file_path(file_path), _duration_s(duration_s) {}
+      ~InputConnectorFile() {}
 
-      void init();
+      void init() {};
 
-      /**
-       * \brief returns the stream input
-       */
       std::string get_input_stream();
+    std::string _file_path;
+    int _duration_s;
   };
+
 
 }
 #endif
