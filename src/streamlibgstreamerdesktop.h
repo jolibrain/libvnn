@@ -23,10 +23,21 @@
 #define STREAMLIBGSTREAMERDESKTOP_H
 
 #include <string>
+#include <chrono>
 #include "streamlib.h"
+#include <gst/gst.h>
 
 namespace vnn
 {
+   typedef struct
+    {
+        GMainLoop *loop;
+        GstElement *source;
+        std::chrono::time_point<std::chrono::system_clock> timestamp;
+        BufferCbFunc _buffercb;
+    } gstreamer_sys_t;
+
+
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
     class StreamLibGstreamerDesktop: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
   {
@@ -44,12 +55,14 @@ namespace vnn
 
     private:
 
+      gstreamer_sys_t *_gstreamer_sys;
       /* pipe to reproduct
        * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
        */
       /* these are the caps we are going to pass through the appsink */
       std::string _video_caps =
         "video/x-raw,width=300,height=300,format=YUY2";
+
   };
 
 #if 0
