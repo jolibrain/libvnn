@@ -37,6 +37,10 @@ namespace vnn
       ~InputConnectorFile() {}
 
       void init() {};
+      void set_filepath(std::string &filepath) {
+        _file_path = filepath;
+      }
+
 
       std::string get_input_stream();
     std::string _file_path;

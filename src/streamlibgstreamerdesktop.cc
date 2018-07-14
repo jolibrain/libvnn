@@ -201,18 +201,14 @@ namespace vnn {
     }
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
     void StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::set_buffer_cb(BufferCbFunc &buffercb)
-    
-
     {
       this->_buffercb = buffercb;
       _program_data->_buffercb = buffercb;
     }
 
 
-
 template class StreamLibGstreamerDesktop<InputConnectorCamera, OutputConnectorDummy>;
 template class StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>;
 
-  
 }
 

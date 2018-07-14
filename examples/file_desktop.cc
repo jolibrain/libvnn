@@ -36,11 +36,12 @@ BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
 
 int main ()
 {
-  std::string video_path = "/home/nicolas/dev/jolibrain/bbb_60.mkv";
+  std::string video_path = "/home/nicolas/dev/jolibrain/samples/bbb_60.mkv";
   int duration =10;
 
-  StreamLibGstreamerDesktop<InputConnectorFile(video_path, duration, OutputConnectorDummy>  my_streamlib;
+  StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>  my_streamlib;
 
+  my_streamlib._input.set_filepath(video_path);
   my_streamlib.init();
   my_streamlib.set_buffer_cb(dummy_callback);
   my_streamlib.run();
