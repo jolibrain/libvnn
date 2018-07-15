@@ -34,9 +34,10 @@ BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
       return 0;
     };
 
-int main ()
+int main(int argc, char** argv)
 {
-  std::string video_path = "/home/nicolas/dev/jolibrain/samples/bbb_60.mkv";
+  // set video patt given as argument
+  std::string video_path = argv[1];
   int duration =10;
 
   StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>  my_streamlib;
