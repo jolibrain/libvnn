@@ -54,30 +54,30 @@ namespace vnn {
     static GstFlowReturn on_new_sample_from_sink (GstElement * elt, gpointer data)
     {
 
+        /* TODO: may be here use static_cast ? */
         gstreamer_sys_t *_gstreamer_sys = (gstreamer_sys_t *) data;
 
         GstSample *sample;
         GstBuffer *buffer;
 
+
         std::chrono::time_point<std::chrono::system_clock> timestamp;
         timestamp = std::chrono::system_clock::now();
 
         int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp - _gstreamer_sys->timestamp).count();
-        std::cout << "elapsed " << elapsed_seconds <<"\n" ;
         std::cout << "FPS " << (1.0/elapsed_seconds)*1000 <<"\n" ;
+
         _gstreamer_sys->timestamp = timestamp;
+
         /* get the sample from appsink */
         sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
         buffer = gst_sample_get_buffer (sample);
+        std::cout << "DTS " << GST_BUFFER_DTS(buffer) <<"\n" ;
 
-        std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
-        std::cout << "address =  " << static_cast<void*>(buffer) << std::endl;
         /* make a copy */
         //app_buffer = gst_buffer_copy (buffer);
         GstMapInfo map;
         gst_buffer_map (buffer, &map, GST_MAP_READ);
-        std::cout << "map.size =  " << map.size <<"\n" ;
-        std::cout << "map.data =  " <<  static_cast<void*>(map.data) <<"\n" ;
         _gstreamer_sys->_buffercb(map.size, map.data);
         /* we don't need the appsink sample anymore */
         gst_sample_unref (sample);
