@@ -30,6 +30,7 @@
 #include <chrono>
 #include "streamlib.h"
 #include <gst/gst.h>
+#include <atomic>
 
 namespace vnn
 {
@@ -39,6 +40,7 @@ namespace vnn
     GstElement *source;
     std::chrono::time_point<std::chrono::system_clock> timestamp;
     BufferCbFunc _buffercb;
+    std::atomic<unsigned long> average_fps;
   } gstreamer_sys_t;
 
 

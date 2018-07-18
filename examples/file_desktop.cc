@@ -33,8 +33,6 @@ using namespace vnn;
 
 BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
     {
-        std::cout << "cb map.size =  " << size <<  std::endl;
-        std::cout << "cb map.data =  " <<  static_cast<void*>(data) << std::endl;
       return 0;
     };
 

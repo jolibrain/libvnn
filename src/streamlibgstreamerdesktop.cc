@@ -41,6 +41,19 @@ namespace vnn {
 
 
 
+  unsigned int moving_average(
+      const unsigned int x_average,
+      const unsigned int x,
+      const unsigned int alpha)
+  {
+    float tmp;
+    unsigned int average_out;
+    tmp =  static_cast<float> ( ((alpha -1) * x_average) + x) ;
+    average_out =  static_cast<unsigned int> (tmp / alpha);
+    return average_out;
+  }
+
+
      /* called when the appsink notifies us that there is a new buffer ready for
      * processing */
   int dummy_callback( long unsigned int size , unsigned char * data )
@@ -58,20 +71,31 @@ namespace vnn {
 
         GstSample *sample;
         GstBuffer *buffer;
+        unsigned int fps;
+        unsigned int average = _gstreamer_sys->average_fps;
 
 
         std::chrono::time_point<std::chrono::system_clock> timestamp;
         timestamp = std::chrono::system_clock::now();
 
-        int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp - _gstreamer_sys->timestamp).count();
-        std::cout << "FPS " << (1.0/elapsed_seconds)*1000 <<"\n" ;
+        auto elapsed_us = \
+            std::chrono::duration_cast<std::chrono::microseconds>(timestamp - _gstreamer_sys->timestamp).count();
 
+        std::cout << "timestamp " << std::chrono::duration_cast<std::chrono::microseconds> (timestamp.time_since_epoch()).count() <<"\n" ;
+        float f_fps =    (1.0/elapsed_us)*1000000;
+        fps = static_cast<unsigned int>(f_fps);
+        std::cout << "elapsed_us " << elapsed_us <<"\n" ;
+        _gstreamer_sys->average_fps = moving_average(
+            average,
+            fps,
+            128
+            );
         _gstreamer_sys->timestamp = timestamp;
 
+          std::cout << "AVG FPS " << _gstreamer_sys->average_fps <<"\n" ;
         /* get the sample from appsink */
         sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
         buffer = gst_sample_get_buffer (sample);
-        std::cout << "DTS " << GST_BUFFER_DTS(buffer) <<"\n" ;
 
         /* make a copy */
         //app_buffer = gst_buffer_copy (buffer);
@@ -81,6 +105,7 @@ namespace vnn {
         /* we don't need the appsink sample anymore */
         gst_sample_unref (sample);
 
+        std::cout << std::endl;
         return GST_FLOW_OK;
     }
 
@@ -125,6 +150,7 @@ namespace vnn {
 
 
         _gstreamer_sys->loop = g_main_loop_new (NULL, FALSE);
+        _gstreamer_sys->average_fps = 0;
 
         input_stream = this->_input.get_input_stream();
 
