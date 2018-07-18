@@ -23,39 +23,33 @@
  * under the License
  */
 
+#include "streamlibgstreamertx2.h"
+#include "inputconnectorfiletx2.h"
+#include "outputconnectordummy.h"
+#include <iostream>
 
-#ifndef STREAMLIBGSTREAMERTX2_H
-#define STREAMLIBGSTREAMERTX2_H
+using namespace vnn;
 
-#include <string>
-#include "streamlib.h"
+BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
+    {
+        std::cout << "cb map.size =  " << size <<  std::endl;
+        std::cout << "cb map.data =  " <<  static_cast<void*>(data) << std::endl;
+      return 0;
+    };
 
-namespace vnn
+int main(int argc, char** argv)
 {
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    class StreamLibGstreamerTX2: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
-  {
-    public:
-      StreamLibGstreamerTX2() {}
-      ~StreamLibGstreamerTX2() {}
-      int init();
-      int run();
-      void set_buffer_cb(BufferCbFunc &buffercb);
-      BufferCbFunc _buffercb = nullptr;
+  // set video patt given as argument
+  std::string video_path = argv[1];
+  int duration =10;
 
-     int stop();
+  StreamLibGstreamerTX2<InputConnectorFileTX2, OutputConnectorDummy>  my_streamlib;
 
-    private:
+  my_streamlib._input.set_filepath(video_path);
+  my_streamlib.init();
+  my_streamlib.set_buffer_cb(dummy_callback);
+  my_streamlib.run();
+  my_streamlib.stop();
 
-      /* pipe to reproduct
-       * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
-       */
-      /* these are the caps we are going to pass through the appsink */
-      std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
-  };
-
-
+  return 0;
 }
-#endif
-

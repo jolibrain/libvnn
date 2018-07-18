@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include "streamlibgstreamertx2.h"
 #include "inputconnectorcamera.h"
+#include "inputconnectorfiletx2.h"
 #include "outputconnectordummy.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
@@ -43,6 +44,7 @@ namespace vnn {
         GMainLoop *loop;
         GstElement *source;
         std::chrono::time_point<std::chrono::system_clock> timestamp;
+        BufferCbFunc _buffercb = nullptr;
     } ProgramData;
     ProgramData * _program_data;
 
@@ -104,9 +106,8 @@ namespace vnn {
         GstElement *testsink = NULL;
         std::ostringstream launch_stream;
         GError *error = nullptr;
+        std::string input_stream;
         std::string launch_string;
-        int w = 4208;
-        int h = 3120;
         int w_scale = 300;
         int h_scale = 300;
 
@@ -115,10 +116,12 @@ namespace vnn {
 
         data->loop = g_main_loop_new (NULL, FALSE);
 
+        input_stream = this->_input.get_input_stream();
+        std::cout << "input stream =  " << input_stream <<  std::endl;
+
 
         launch_stream
-          << "nvcamerasrc ! "
-          << "video/x-raw(memory:NVMM), width="<< w <<", height="<< h <<", framerate=30/1 ! "
+          << input_stream << " ! "
           << "nvvidconv ! "
           << "video/x-raw, format=RGBA, width="<< w_scale <<", height="<< h_scale <<" ! "
           << "appsink name=testsink";
@@ -158,7 +161,6 @@ namespace vnn {
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
     int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::run()
     {
-
         /* launching things */
         _program_data->timestamp = std::chrono::system_clock::now();
         gst_element_set_state (_program_data->source, GST_STATE_PLAYING);
@@ -176,7 +178,16 @@ namespace vnn {
         return 0;
     }
 
+  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+    void StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::
+    set_buffer_cb(BufferCbFunc &buffercb)
+    {
+      this->_buffercb = buffercb;
+      _program_data->_buffercb = buffercb;
+    }
+
 
 template class StreamLibGstreamerTX2<InputConnectorCamera, OutputConnectorDummy>;
+template class StreamLibGstreamerTX2<InputConnectorFileTX2, OutputConnectorDummy>;
 }
 

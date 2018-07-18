@@ -23,39 +23,36 @@
  * under the License
  */
 
+#ifndef INPUTCONNECTORFILETX2_H
+#define INPUTCONNECTORFILETX2_H
 
-#ifndef STREAMLIBGSTREAMERTX2_H
-#define STREAMLIBGSTREAMERTX2_H
+#include "inputconnectorstrategy.h"
 
 #include <string>
-#include "streamlib.h"
-
 namespace vnn
 {
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    class StreamLibGstreamerTX2: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
+
+  class InputConnectorFileTX2: public InputConnectorStrategy
   {
     public:
-      StreamLibGstreamerTX2() {}
-      ~StreamLibGstreamerTX2() {}
-      int init();
-      int run();
-      void set_buffer_cb(BufferCbFunc &buffercb);
-      BufferCbFunc _buffercb = nullptr;
+      InputConnectorFileTX2() {}
+      InputConnectorFileTX2(const std::string & file_path, const int & duration_s)
+        : _file_path(file_path), _duration_s(duration_s) {}
+      ~InputConnectorFileTX2() {}
 
-     int stop();
+      void init() {};
+      void set_filepath(std::string &filepath) {
+        _file_path = filepath;
+      }
 
-    private:
 
-      /* pipe to reproduct
-       * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
-       */
-      /* these are the caps we are going to pass through the appsink */
-      std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
+      std::string get_input_stream();
+
+      std::string _file_path;
+      int _duration_s;
   };
 
 
 }
-#endif
+#endif // INPUTCONNECTORFILETX2_H
 

@@ -23,39 +23,14 @@
  * under the License
  */
 
+#include "inputconnectorcameratx2.h"
+#include <iostream>
 
-#ifndef STREAMLIBGSTREAMERTX2_H
-#define STREAMLIBGSTREAMERTX2_H
+namespace vnn {
 
-#include <string>
-#include "streamlib.h"
-
-namespace vnn
-{
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    class StreamLibGstreamerTX2: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
-  {
-    public:
-      StreamLibGstreamerTX2() {}
-      ~StreamLibGstreamerTX2() {}
-      int init();
-      int run();
-      void set_buffer_cb(BufferCbFunc &buffercb);
-      BufferCbFunc _buffercb = nullptr;
-
-     int stop();
-
-    private:
-
-      /* pipe to reproduct
-       * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
-       */
-      /* these are the caps we are going to pass through the appsink */
-      std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
-  };
-
+    void InputConnectorCameraTX2::init()
+    {
+      std::cout << "enter InputConnectorCameraTX2::init \n";
+    };
 
 }
-#endif
-

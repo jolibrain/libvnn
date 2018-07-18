@@ -14,8 +14,12 @@ set(vnn_SOURCES  vnnvideostream.h
                     inputconnectorstrategy.h
 		    inputconnectorcamera.h
 		    inputconnectorcamera.cc
+		    inputconnectorcameratx2.h
+		    inputconnectorcameratx2.cc
 		    inputconnectorfile.h
 		    inputconnectorfile.cc
+		    inputconnectorfiletx2.h
+		    inputconnectorfiletx2.cc
 		    streamlib.h
 		    streamlibgstreamerdesktop.h
 		    streamlibgstreamerdesktop.cc

@@ -33,13 +33,13 @@
 
 namespace vnn
 {
-   typedef struct
-    {
-        GMainLoop *loop;
-        GstElement *source;
-        std::chrono::time_point<std::chrono::system_clock> timestamp;
-        BufferCbFunc _buffercb;
-    } gstreamer_sys_t;
+  typedef struct
+  {
+    GMainLoop *loop;
+    GstElement *source;
+    std::chrono::time_point<std::chrono::system_clock> timestamp;
+    BufferCbFunc _buffercb;
+  } gstreamer_sys_t;
 
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
@@ -51,14 +51,10 @@ namespace vnn
       int init();
       int run();
       int stop();
-     void set_buffer_cb(BufferCbFunc &buffercb);
-
-
-    BufferCbFunc _buffercb = nullptr;
-
+      void set_buffer_cb(BufferCbFunc &buffercb);
+      BufferCbFunc _buffercb = nullptr;
 
     private:
-
       gstreamer_sys_t *_gstreamer_sys;
       /* pipe to reproduct
        * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink

@@ -24,38 +24,17 @@
  */
 
 
-#ifndef STREAMLIBGSTREAMERTX2_H
-#define STREAMLIBGSTREAMERTX2_H
+#include "inputconnectorfiletx2.h"
 
-#include <string>
-#include "streamlib.h"
+#include <sstream>
 
-namespace vnn
-{
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    class StreamLibGstreamerTX2: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
-  {
-    public:
-      StreamLibGstreamerTX2() {}
-      ~StreamLibGstreamerTX2() {}
-      int init();
-      int run();
-      void set_buffer_cb(BufferCbFunc &buffercb);
-      BufferCbFunc _buffercb = nullptr;
+namespace vnn {
 
-     int stop();
-
-    private:
-
-      /* pipe to reproduct
-       * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
-       */
-      /* these are the caps we are going to pass through the appsink */
-      std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
-  };
-
-
+  std::string InputConnectorFileTX2::get_input_stream() {
+    std::ostringstream input_stream;
+    input_stream
+      << "filesrc location=" << this->_file_path << " ! "
+      << "qtdemux ! h264parse ! omxh264dec ";
+    return input_stream.str();
+  }
 }
-#endif
-
