@@ -6,13 +6,18 @@ Depedencies:
 ```shell
 sudo apt-get install build-essential cmake libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
-Build with cmake:
+Build with cmake on desktop :
 
 ```shell
 mkdir build && cd build && cmake ..
 make -j
 ```
+Build with cmake ON jetson TX2:
 
+```shell
+mkdir build && cd build && cmake .. -DUSE_TX2=ON
+make -j
+`
 
 ## Benchmarking
 ### example: examples/TX2/c/TX2_video_scale_appsink.cpp
