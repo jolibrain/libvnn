@@ -29,26 +29,55 @@
 #include "inputconnectorstrategy.h"
 
 #include <string>
+#include <unordered_map>
+
 namespace vnn
 {
+
+  static std::unordered_map<std::string, std::string> TX2_CONTAINERS {
+	{"qt","qtdemux"},
+	{"mkv","matroskademux"}
+  };
+
+  static std::unordered_map<std::string, std::string> TX2_DECODERS {
+	{"h264","h264parse ! omxh264dec"},
+	{"h265", "h265parse ! omxh265dec"}
+  };
+
 
   class InputConnectorFileTX2: public InputConnectorStrategy
   {
     public:
-      InputConnectorFileTX2() {}
+      InputConnectorFileTX2():
+        _container(TX2_CONTAINERS["qt"]),
+        _decoder(TX2_DECODERS["h264"])
+      {}
+
+
       InputConnectorFileTX2(const std::string & file_path, const int & duration_s)
-        : _file_path(file_path), _duration_s(duration_s) {}
+        : _file_path(file_path), _duration_s(duration_s),
+        _container(TX2_CONTAINERS["qt"]),
+        _decoder(TX2_DECODERS["h264"])
+      {}
       ~InputConnectorFileTX2() {}
 
       void init() {};
       void set_filepath(std::string &filepath) {
         _file_path = filepath;
       }
+      void set_container(std::string &container) {
+        _container = TX2_CONTAINERS[container];
+      }
+      void set_decoder(std::string &decoder) {
+        _decoder = TX2_DECODERS[decoder];
+      }
 
 
       std::string get_input_stream();
 
       std::string _file_path;
+      std::string _container;
+      std::string _decoder;
       int _duration_s;
   };
 

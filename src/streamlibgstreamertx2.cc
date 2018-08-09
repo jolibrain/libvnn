@@ -37,7 +37,7 @@
 
 namespace vnn {
 
-
+    static long int frame_counter;
 
     typedef struct
     {
@@ -59,15 +59,18 @@ namespace vnn {
         timestamp = std::chrono::system_clock::now();
 
         int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp - data->timestamp).count();
+#if 0
         std::cout << "elapsed " << elapsed_seconds <<"\n" ;
         std::cout << "FPS " << (1.0/elapsed_seconds)*1000 <<"\n" ;
+#endif
         data->timestamp = timestamp;
 
         /* get the sample from appsink */
         sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
         buffer = gst_sample_get_buffer (sample);
 
-        std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
+        //std::cout << "size =  " << gst_buffer_get_size(buffer) <<"\n" ;
+        frame_counter++;
         /* make a copy */
         //app_buffer = gst_buffer_copy (buffer);
 
@@ -163,11 +166,14 @@ namespace vnn {
     {
         /* launching things */
         _program_data->timestamp = std::chrono::system_clock::now();
+	frame_counter = 0;
         gst_element_set_state (_program_data->source, GST_STATE_PLAYING);
         /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
          * error occurs in the source or sink pipelines. */
         g_print ("Let's run!\n");
         g_main_loop_run (_program_data->loop);
+
+        std::cout << "Frame count " << frame_counter << std::endl;;
         g_print ("Going out\n");
         return 0;
     }

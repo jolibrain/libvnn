@@ -22,8 +22,6 @@
  * specific language governing permissions and limitations
  * under the License
  */
-
-
 #include "inputconnectorfiletx2.h"
 
 #include <sstream>
@@ -34,7 +32,8 @@ namespace vnn {
     std::ostringstream input_stream;
     input_stream
       << "filesrc location=" << this->_file_path << " ! "
-      << "qtdemux ! h264parse ! omxh264dec ";
+      << this->_container <<  " !"
+      << this->_decoder;
     return input_stream.str();
   }
 }
