@@ -17,9 +17,30 @@ Build with cmake ON jetson TX2:
 ```shell
 mkdir build && cd build && cmake .. -DUSE_TX2=ON
 make -j
-`
+``
 
 ## Benchmarking
+
+### ON Jetston TX2
+#### File honeyBees.mp4
+  - Duration: 227 seconds
+  - Video format:  4096x2304, 24 fps,  h264 (High),  yuv420p 
+  - bitrate: 22277 kb/s
+  
+#### File bbb_60.mp4
+  - Duration: 60 seconds
+  - Video format: 3840x2160, 30 fps,  h264 (High 4:4:4P),  yuv420p 
+  - bitrate: 338450 kb/s
+
+
+|  File     | Bitrate     | Decoding ratio | FPS   |
+| ------    | --------    | ---------------| ----- |
+| honeyBees |  22,2 Mb/s  | 5.89           | 141   |
+| bbb_60    |  338,4 Mb/s | 1.93           | 58    |
+
+  
+
+
 ### example: examples/TX2/c/TX2_video_scale_appsink.cpp
   On TX2
   decodoing to appsink without video syncthonisation for performance measurement
