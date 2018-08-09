@@ -17,7 +17,7 @@ Build with cmake ON jetson TX2:
 ```shell
 mkdir build && cd build && cmake .. -DUSE_TX2=ON
 make -j
-``
+```
 
 ## Benchmarking
 
