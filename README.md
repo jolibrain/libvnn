@@ -32,8 +32,18 @@ make -j
   - Video format: 3840x2160, 30 fps,  h264 (High 4:4:4P),  yuv420p 
   - bitrate: 338450 kb/s
 
+Benchmarging executables are generated in folder *build/examples*.
 
-|  File     | Bitrate     | Decoding ratio | FPS   |
+For TX2 use: file_tx2 /path/to/video/file/
+
+Example : 
+```shell
+build/examples/file_tx2  ~/dev/samples/bbb_60.mp4
+```
+
+#### Benchmark results on jetson TX2
+
+File     | Bitrate     | Decoding ratio | FPS   |
 | ------    | --------    | ---------------| ----- |
 | honeyBees |  22,2 Mb/s  | 5.89           | 141   |
 | bbb_60    |  338,4 Mb/s | 1.93           | 58    |
