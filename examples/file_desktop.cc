@@ -28,6 +28,7 @@
 #include "inputconnectorfile.h"
 #include "outputconnectordummy.h"
 #include <iostream>
+#include <chrono>
 
 using namespace vnn;
 
@@ -41,14 +42,24 @@ int main(int argc, char** argv)
   // set video patt given as argument
   std::string video_path = argv[1];
   int duration =10;
+  std::chrono::time_point<std::chrono::system_clock> start, end;
 
   StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>  my_streamlib;
 
   my_streamlib._input.set_filepath(video_path);
   my_streamlib.init();
   my_streamlib.set_buffer_cb(dummy_callback);
+  start = std::chrono::system_clock::now();
   my_streamlib.run();
+  end = std::chrono::system_clock::now();
   my_streamlib.stop();
+
+  int elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>
+	  (end-start).count();
+  std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+  std::cout << "finished computation at " << std::ctime(&end_time)
+	  << "elapsed time: " << elapsed_seconds << "s\n";
 
   return 0;
 

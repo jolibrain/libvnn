@@ -80,11 +80,12 @@ namespace vnn {
 
         auto elapsed_us = \
             std::chrono::duration_cast<std::chrono::microseconds>(timestamp - _gstreamer_sys->timestamp).count();
-
+#if 0
         std::cout << "timestamp " << std::chrono::duration_cast<std::chrono::microseconds> (timestamp.time_since_epoch()).count() <<"\n" ;
         float f_fps =    (1.0/elapsed_us)*1000000;
         fps = static_cast<unsigned int>(f_fps);
         std::cout << "elapsed_us " << elapsed_us <<"\n" ;
+#endif
         _gstreamer_sys->average_fps = moving_average(
             average,
             fps,
@@ -92,7 +93,7 @@ namespace vnn {
             );
         _gstreamer_sys->timestamp = timestamp;
 
-          std::cout << "AVG FPS " << _gstreamer_sys->average_fps <<"\n" ;
+     //     std::cout << "AVG FPS " << _gstreamer_sys->average_fps <<"\n" ;
         /* get the sample from appsink */
         sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
         buffer = gst_sample_get_buffer (sample);
@@ -105,7 +106,7 @@ namespace vnn {
         /* we don't need the appsink sample anymore */
         gst_sample_unref (sample);
 
-        std::cout << std::endl;
+        // std::cout << std::endl;
         return GST_FLOW_OK;
     }
 
