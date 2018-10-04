@@ -31,3 +31,6 @@ set(vnn_SOURCES  vnnvideostream.h
 		    )
 
 add_library(vnn ${vnn_SOURCES})
+
+install(TARGETS vnn DESTINATION lib)
+install(FILES streamlib.h DESTINATION include)
