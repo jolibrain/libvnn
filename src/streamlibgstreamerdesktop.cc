@@ -41,6 +41,20 @@
 
 
 namespace vnn {
+  struct node {
+    char *key;
+    char *value;
+    struct node *next;
+  };
+
+  struct gstreamer_sys_t
+  {
+    GMainLoop *loop;
+    GstElement *source;
+    std::chrono::time_point<std::chrono::system_clock> timestamp;
+    BufferCbFunc _buffercb;
+    std::atomic<unsigned long> average_fps;
+  };
 
 
     static long int frame_counter;
@@ -71,7 +85,7 @@ namespace vnn {
     {
 
         /* TODO: may be here use static_cast ? */
-        gstreamer_sys_t *_gstreamer_sys = (gstreamer_sys_t *) data;
+        Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
 
         GstSample *sample;
         GstBuffer *buffer;
@@ -170,14 +184,14 @@ uncomment for debug purpose
         GError *error = nullptr;
         std::string launch_string;
         std::string input_stream;
-        gstreamer_sys_t * _gstraemer_sys;
+        Gstreamer_sys_t * _gstraemer_sys;
 
         this->_input.init();
         this->_output.init();
 
 
         gst_init(nullptr, nullptr);
-        this->_gstreamer_sys = g_new0 (gstreamer_sys_t, 1);
+        this->_gstreamer_sys = g_new0 (Gstreamer_sys_t, 1);
         _gstreamer_sys = this->_gstreamer_sys;
 
 

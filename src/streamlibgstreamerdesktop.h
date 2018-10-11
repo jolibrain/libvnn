@@ -36,14 +36,8 @@
 
 namespace vnn
 {
-  typedef struct
-  {
-    GMainLoop *loop;
-    GstElement *source;
-    std::chrono::time_point<std::chrono::system_clock> timestamp;
-    BufferCbFunc _buffercb;
-    std::atomic<unsigned long> average_fps;
-  } gstreamer_sys_t;
+typedef struct node Node;
+typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
@@ -61,7 +55,8 @@ namespace vnn
       BufferCbFunc _buffercb = nullptr;
 
     private:
-      gstreamer_sys_t *_gstreamer_sys;
+      Gstreamer_sys_t *_gstreamer_sys;
+      Node * myNode;
       /* pipe to reproduct
        * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
        */
