@@ -38,10 +38,14 @@
 #include <gst/pbutils/pbutils.h>
 #include <iostream>
 #include <sstream>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+
 
 namespace vnn {
 
 
+    static long int frame_counter;
 
   unsigned int moving_average(
       const unsigned int x_average,
@@ -73,8 +77,16 @@ namespace vnn {
 
         GstSample *sample;
         GstBuffer *buffer;
+        GstCaps   *caps;
+        const GstStructure *structure;
         unsigned int fps;
         unsigned int average = _gstreamer_sys->average_fps;
+        int width, height;
+        cv::Mat imgbuf ;
+        cv::Mat rgbimgbuf ;
+        char* dump_structure = new char;
+
+        std::ostringstream img_path;
 
 
         std::chrono::time_point<std::chrono::system_clock> timestamp;
@@ -98,16 +110,41 @@ namespace vnn {
      //     std::cout << "AVG FPS " << _gstreamer_sys->average_fps <<"\n" ;
         /* get the sample from appsink */
         sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
+      caps = gst_sample_get_caps(sample);
         buffer = gst_sample_get_buffer (sample);
 
         /* make a copy */
         //app_buffer = gst_buffer_copy (buffer);
         GstMapInfo map;
         gst_buffer_map (buffer, &map, GST_MAP_READ);
-        _gstreamer_sys->_buffercb(map.size, map.data);
-        /* we don't need the appsink sample anymore */
-        gst_sample_unref (sample);
+        //std::cout << "size =" << map.size << std::endl ;
+        structure = gst_caps_get_structure (caps, 0);
+        if (!gst_structure_get_int (structure, "width", &width) ||
+            !gst_structure_get_int (structure, "height", &height)) {
+            std::cout << "No width/height available\n" << std::endl;
+          return GST_FLOW_OK ;
+        }
+        std::cout << "width =" << width << std::endl ;
+        std::cout << "height =" << height << std::endl ;
+        imgbuf = cv::Mat(cv::Size(width, height), CV_8UC2, (char*)map.data, cv::Mat::AUTO_STEP);
+        rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+        cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGRA_YUY2); 
+        frame_counter++;
+        img_path << "/tmp/images/img" << frame_counter <<".jpg";
+        std::cout << "img_path =" << img_path.str() << std::endl ;
+        dump_structure = gst_structure_to_string(structure);
+        std::cout << "dump_structure: " << dump_structure << std::endl;
+        delete dump_structure ;
+        imwrite(img_path.str(), rgbimgbuf);
 
+        //_gstreamer_sys->_buffercb(map.size, map.data);
+
+        /* we don't need the appsink sample anymore */
+        //gst_buffer_unmap(buffer, &map);
+        gst_sample_unref (sample);
+        if (frame_counter > 100) {
+          return GST_FLOW_EOS;
+        }
         // std::cout << std::endl;
         return GST_FLOW_OK;
     }
@@ -208,6 +245,7 @@ namespace vnn {
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_PLAYING);
         /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
          * error occurs in the source or sink pipelines. */
+        frame_counter =0;
         g_print ("Let's run!\n");
         g_main_loop_run (_gstreamer_sys->loop);
         g_print ("Going out\n");

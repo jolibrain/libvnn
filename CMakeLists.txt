@@ -31,6 +31,8 @@ else()
 	include_directories("/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include/")
 endif()
 
+find_package( OpenCV REQUIRED )
+
 set (GSTREAMER_APP_LIB_DEPS -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0 -lgstpbutils-1.0)
 set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11 $(pkg-config --cflags --libs gstreamer-app-1.0)")
 
