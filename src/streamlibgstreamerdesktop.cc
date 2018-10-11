@@ -110,28 +110,28 @@ namespace vnn {
           caps = gst_sample_get_caps(sample);
           buffer = gst_sample_get_buffer (sample);
 
-          /* make a copy */
-          //app_buffer = gst_buffer_copy (buffer);
           GstMapInfo map;
           gst_buffer_map (buffer, &map, GST_MAP_READ);
-          //std::cout << "size =" << map.size << std::endl ;
           structure = gst_caps_get_structure (caps, 0);
           if (!gst_structure_get_int (structure, "width", &width) ||
               !gst_structure_get_int (structure, "height", &height)) {
             std::cout << "No width/height available\n" << std::endl;
             return GST_FLOW_OK ;
           }
+#if 0
+uncomment for debug purpose
+          dump_structure = gst_structure_to_string(structure);
           std::cout << "width =" << width << std::endl ;
           std::cout << "height =" << height << std::endl ;
-          frame_counter++;
-          dump_structure = gst_structure_to_string(structure);
           std::cout << "dump_structure: " << dump_structure << std::endl;
+#endif
+          frame_counter++;
           delete dump_structure ;
 
           _gstreamer_sys->_buffercb(width, height, map.data);
 
           /* we don't need the appsink sample anymore */
-          //gst_buffer_unmap(buffer, &map);
+          gst_buffer_unmap(buffer, &map);
           gst_sample_unref (sample);
           if (frame_counter > 100) {
             return GST_FLOW_EOS;
