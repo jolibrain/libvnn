@@ -31,6 +31,8 @@
 #include "streamlib.h"
 #include <gst/gst.h>
 #include <atomic>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace vnn
 {

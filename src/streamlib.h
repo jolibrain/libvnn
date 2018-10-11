@@ -31,7 +31,7 @@
 namespace vnn
 {
 
-  typedef std::function<int (long unsigned int, unsigned char * )> BufferCbFunc;
+  typedef std::function<int (int, int, unsigned char * )> BufferCbFunc;
 
   template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
     class StreamLib

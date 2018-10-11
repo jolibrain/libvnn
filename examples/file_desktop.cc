@@ -32,16 +32,30 @@
 
 using namespace vnn;
 
-BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
-    {
-      return 0;
-    };
+static long int frame_counter;
+
+BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
+{
+  cv::Mat imgbuf ;
+  cv::Mat rgbimgbuf ;
+  std::ostringstream img_path;
+  img_path << "/tmp/images/img" << frame_counter <<".jpg";
+  std::cout << "img_path =" << img_path.str() << std::endl ;
+
+  imgbuf = cv::Mat(cv::Size(width, height), CV_8UC2, (char*)data, cv::Mat::AUTO_STEP);
+  rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)data, cv::Mat::AUTO_STEP);
+  cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGRA_YUY2); 
+  imwrite(img_path.str(), rgbimgbuf);
+  frame_counter++;
+  return 0;
+};
 
 int main(int argc, char** argv)
 {
   // set video patt given as argument
   std::string video_path = argv[1];
   int duration =10;
+  frame_counter=0;
   std::chrono::time_point<std::chrono::system_clock> start, end;
 
   StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>  my_streamlib;

@@ -31,7 +31,7 @@
 
 using namespace vnn;
 
-BufferCbFunc dummy_callback=[]( long unsigned int size , unsigned char * data )
+BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
     {
       return 0;
     };
