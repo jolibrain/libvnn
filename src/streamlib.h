@@ -33,7 +33,7 @@ namespace vnn
 
   typedef std::function<int (int, int, unsigned char * )> BufferCbFunc;
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     class StreamLib
     {
       public:
@@ -47,8 +47,8 @@ namespace vnn
         {  return 0;};
         int stop()
         {  return 0;};
-        TInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
-        TOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
+        TVnnInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
+        TVnnOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
     };
 /**
      * \brief sets the gradient function, if available.

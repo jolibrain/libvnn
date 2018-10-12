@@ -22,18 +22,15 @@
  * specific language governing permissions and limitations
  * under the License
  */
-#include "inputconnectorfiletx2.h"
 
-#include <sstream>
+#include "vnninputconnectorcameratx2.h"
+#include <iostream>
 
 namespace vnn {
 
-  std::string InputConnectorFileTX2::get_input_stream() {
-    std::ostringstream input_stream;
-    input_stream
-      << "filesrc location=" << this->_file_path << " ! "
-      << this->_container <<  " !"
-      << this->_decoder;
-    return input_stream.str();
-  }
+    void VnnInputConnectorCameraTX2::init()
+    {
+      std::cout << "enter VnnInputConnectorCameraTX2::init \n";
+    };
+
 }

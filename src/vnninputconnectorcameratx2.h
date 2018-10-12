@@ -23,24 +23,37 @@
  * under the License
  */
 
+#ifndef VNNINPUTCONNECTORCAMERATX2_H
+#define VNNINPUTCONNECTORCAMERATX2_H
 
-#include "outputconnectordummy.h"
+#include "vnninputconnectorstrategy.h"
+
+#include <cstdlib>
 #include <string>
-#include <iostream>
+#include <sstream>
+namespace vnn
+{
 
-namespace vnn {
+  class VnnInputConnectorCameraTX2: public VnnInputConnectorStrategy
+  {
+    public:
+      VnnInputConnectorCameraTX2() {};
+      ~VnnInputConnectorCameraTX2() {};
+      void init();
 
-    OutputConnectorDummy::OutputConnectorDummy(SizeFunc &func)
-      :_szfunc(func){};
+      std::string get_input_stream() {
+        std::ostringstream input_stream;
+        int w = 4208;
+        int h = 3120;
+        input_stream
+          << "nvcamerasrc ! "
+          << "video/x-raw(memory:NVMM), width="<< w <<", height="<< h <<", framerate=30/1 ! ";
 
-    void OutputConnectorDummy::init()
-    {
-      std::cout << "enter OutputConnectorDummy::init \n";
-    };
+        return input_stream.str();
+      }
+  };
 
 
-   std::string OutputConnectorDummy::output_command(void)
-   {
-        return "dummy\n";
-   };
 }
+#endif // INPUTCONNECTORCAMERATX2_H
+

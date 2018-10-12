@@ -24,8 +24,8 @@
  */
 
 #include "streamlibgstreamertx2.h"
-#include "inputconnectorfiletx2.h"
-#include "outputconnectordummy.h"
+#include "vnninputconnectorfiletx2.h"
+#include "vnnoutputconnectordummy.h"
 #include <iostream>
 #include <chrono>
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
   int duration =10;
   std::chrono::time_point<std::chrono::system_clock> start, end;
 
-  StreamLibGstreamerTX2<InputConnectorFileTX2, OutputConnectorDummy>  my_streamlib;
+  StreamLibGstreamerTX2<VnnInputConnectorFileTX2, VnnOutputConnectorDummy>  my_streamlib;
 
   my_streamlib._input.set_filepath(video_path);
   if (argc == 3) {

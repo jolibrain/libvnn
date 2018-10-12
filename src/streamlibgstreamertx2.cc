@@ -26,9 +26,9 @@
 
 #include <cstdlib>
 #include "streamlibgstreamertx2.h"
-#include "inputconnectorcamera.h"
-#include "inputconnectorfiletx2.h"
-#include "outputconnectordummy.h"
+#include "vnninputconnectorcamera.h"
+#include "vnninputconnectorfiletx2.h"
+#include "vnnoutputconnectordummy.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <chrono>
@@ -101,8 +101,8 @@ namespace vnn {
         };
 
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::init()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::init()
     {
         ProgramData *data = NULL;
         GstBus *bus = NULL;
@@ -161,8 +161,8 @@ namespace vnn {
         return 0;
     };
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::run()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::run()
     {
         /* launching things */
         _program_data->timestamp = std::chrono::system_clock::now();
@@ -178,14 +178,14 @@ namespace vnn {
         return 0;
     }
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::stop()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::stop()
     {
         return 0;
     }
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    void StreamLibGstreamerTX2<TInputConnectorStrategy, TOutputConnectorStrategy>::
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    void StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::
     set_buffer_cb(BufferCbFunc &buffercb)
     {
       this->_buffercb = buffercb;
@@ -193,7 +193,7 @@ namespace vnn {
     }
 
 
-template class StreamLibGstreamerTX2<InputConnectorCamera, OutputConnectorDummy>;
-template class StreamLibGstreamerTX2<InputConnectorFileTX2, OutputConnectorDummy>;
+template class StreamLibGstreamerTX2<VnnInputConnectorCamera, VnnOutputConnectorDummy>;
+template class StreamLibGstreamerTX2<VnnInputConnectorFileTX2, VnnOutputConnectorDummy>;
 }
 

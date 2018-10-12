@@ -23,28 +23,20 @@
  * under the License
  */
 
-#ifndef INPUTCONNECTORCAMERA_H
-#define INPUTCONNECTORCAMERA_H
 
-#include "inputconnectorstrategy.h"
+#include "vnninputconnectorfile.h"
 
-#include <string>
-namespace vnn
-{
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
 
-  class InputConnectorCamera: public InputConnectorStrategy
-  {
-    public:
-      InputConnectorCamera() {};
-      ~InputConnectorCamera() {};
-      void init();
+namespace vnn {
 
-      std::string get_input_stream() {
-        return "v4l2src num_buffers=10 ! video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1";
-      }
-  };
-
-
+  std::string VnnInputConnectorFile::get_input_stream() {
+    std::ostringstream input_stream;
+    input_stream
+      << "filesrc location=" << this->_file_path << " ! "
+      << "decodebin ";
+    return input_stream.str();
+  }
 }
-#endif //INPUTCONNECTORCAMERA_H
-

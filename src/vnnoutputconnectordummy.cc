@@ -24,27 +24,23 @@
  */
 
 
-#ifndef OUTPUTCONNECTORSTRATEGY_H
-#define OUTPUTCONNECTORSTRATEGY_H
-
+#include "vnnoutputconnectordummy.h"
 #include <string>
+#include <iostream>
 
-namespace vnn
-{
-  class OutputConnectorStrategy
-  {
-    public:
-      OutputConnectorStrategy() {}
-      ~OutputConnectorStrategy() {}
+namespace vnn {
 
-      /**
-       * \brief return output command to apply to streamlib
-       */
-      std::string output_command();
-  };
+    VnnOutputConnectorDummy::VnnOutputConnectorDummy(SizeFunc &func)
+      :_szfunc(func){};
+
+    void VnnOutputConnectorDummy::init()
+    {
+      std::cout << "enter VnnOutputConnectorDummy::init \n";
+    };
 
 
-
+   std::string VnnOutputConnectorDummy::output_command(void)
+   {
+        return "dummy\n";
+   };
 }
-#endif
-

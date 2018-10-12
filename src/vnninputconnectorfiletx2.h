@@ -23,10 +23,10 @@
  * under the License
  */
 
-#ifndef INPUTCONNECTORFILETX2_H
-#define INPUTCONNECTORFILETX2_H
+#ifndef VNNINPUTCONNECTORFILETX2_H
+#define VNNINPUTCONNECTORFILETX2_H
 
-#include "inputconnectorstrategy.h"
+#include "vnninputconnectorstrategy.h"
 
 #include <string>
 #include <unordered_map>
@@ -45,21 +45,21 @@ namespace vnn
   };
 
 
-  class InputConnectorFileTX2: public InputConnectorStrategy
+  class VnnInputConnectorFileTX2: public VnnInputConnectorStrategy
   {
     public:
-      InputConnectorFileTX2():
+      VnnInputConnectorFileTX2():
         _container(TX2_CONTAINERS["qt"]),
         _decoder(TX2_DECODERS["h264"])
       {}
 
 
-      InputConnectorFileTX2(const std::string & file_path, const int & duration_s)
+      VnnInputConnectorFileTX2(const std::string & file_path, const int & duration_s)
         : _file_path(file_path), _duration_s(duration_s),
         _container(TX2_CONTAINERS["qt"]),
         _decoder(TX2_DECODERS["h264"])
       {}
-      ~InputConnectorFileTX2() {}
+      ~VnnInputConnectorFileTX2() {}
 
       void init() {};
       void set_filepath(std::string &filepath) {

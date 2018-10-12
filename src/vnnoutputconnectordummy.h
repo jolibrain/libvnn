@@ -23,14 +23,38 @@
  * under the License
  */
 
-#include "inputconnectorcameratx2.h"
-#include <iostream>
+#ifndef VNNOUTPUTCONNECTORDUMMY_H
+#define VNNOUTPUTCONNECTORDUMMY_H
 
-namespace vnn {
 
-    void InputConnectorCameraTX2::init()
-    {
-      std::cout << "enter InputConnectorCameraTX2::init \n";
-    };
+
+#include "vnnoutputconnectorstrategy.h"
+#include <string>
+#include <functional>
+
+namespace vnn
+{
+  typedef std::function<int (void)> SizeFunc;
+
+
+  class VnnOutputConnectorDummy: public VnnOutputConnectorStrategy
+  {
+    public:
+      VnnOutputConnectorDummy(){}
+      VnnOutputConnectorDummy(SizeFunc &func);
+      ~VnnOutputConnectorDummy() {}
+
+      void init();
+      /**
+       * \brief return output command to apply to streamlib
+       */
+      std::string output_command();
+    protected:
+      SizeFunc _szfunc = nullptr;
+  };
+
+
 
 }
+#endif
+

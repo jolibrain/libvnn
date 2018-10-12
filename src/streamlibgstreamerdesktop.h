@@ -29,19 +29,17 @@
 #include <string>
 #include <chrono>
 #include "streamlib.h"
-#include <gst/gst.h>
 #include <atomic>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
 namespace vnn
 {
-typedef struct node Node;
 typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    class StreamLibGstreamerDesktop: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    class StreamLibGstreamerDesktop: public StreamLib<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
   {
     public:
       StreamLibGstreamerDesktop() {}
@@ -56,7 +54,6 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
     private:
       Gstreamer_sys_t *_gstreamer_sys;
-      Node * myNode;
       /* pipe to reproduct
        * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
        */

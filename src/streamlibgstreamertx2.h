@@ -32,8 +32,8 @@
 
 namespace vnn
 {
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    class StreamLibGstreamerTX2: public StreamLib<TInputConnectorStrategy, TOutputConnectorStrategy>
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    class StreamLibGstreamerTX2: public StreamLib<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
   {
     public:
       StreamLibGstreamerTX2() {}

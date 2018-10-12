@@ -23,20 +23,26 @@
  * under the License
  */
 
+#ifndef VNNINPUTCONNECTORSTRATEGY_H
+#define VNNINPUTCONNECTORSTRATEGY_H
+#include <string>
 
-#include "inputconnectorfile.h"
+namespace vnn
+{
+  class VnnInputConnectorStrategy
+  {
+    public:
+      VnnInputConnectorStrategy() {};
+      ~VnnInputConnectorStrategy() {};
 
-#include <cstdlib>
-#include <iostream>
-#include <sstream>
+      void init();
 
-namespace vnn {
+      /**
+       * \brief returns the stream input
+       */
+      std::string get_input_stream();
+  };
 
-  std::string InputConnectorFile::get_input_stream() {
-    std::ostringstream input_stream;
-    input_stream
-      << "filesrc location=" << this->_file_path << " ! "
-      << "decodebin ";
-    return input_stream.str();
-  }
 }
+#endif
+

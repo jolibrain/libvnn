@@ -25,15 +25,15 @@
 
 //#include "streamlib.h"
 #include "streamlibgstreamertx2.h"
-#include "inputconnectorcamera.h"
-#include "outputconnectordummy.h"
+#include "vnninputconnectorcamera.h"
+#include "vnnoutputconnectordummy.h"
 
 using namespace vnn;
 
 int main ()
 {
 
-  StreamLibGstreamerTX2<InputConnectorCamera,OutputConnectorDummy>  my_streamlib;
+  StreamLibGstreamerTX2<VnnInputConnectorCamera,VnnOutputConnectorDummy>  my_streamlib;
  // StreamLib <InputConnectorCamera,OutputConnector>  my_streamlib;
 
   my_streamlib.init();

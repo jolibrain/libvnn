@@ -28,7 +28,7 @@
 
 namespace vnn
 {
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     class VideoStreamNN
     {
       public:
@@ -44,8 +44,8 @@ namespace vnn
           _streamlib.run();
         }
 
-        TInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
-        TOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
+        TVnnInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
+        TVnnOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
 
 
     };

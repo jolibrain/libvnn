@@ -25,8 +25,8 @@
 
 //#include "streamlib.h"
 #include "streamlibgstreamerdesktop.h"
-#include "inputconnectorcamera.h"
-#include "outputconnectordummy.h"
+#include "vnninputconnectorcamera.h"
+#include "vnnoutputconnectordummy.h"
 #include <iostream>
 
 using namespace vnn;
@@ -39,7 +39,7 @@ BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
 int main ()
 {
 
-  StreamLibGstreamerDesktop<InputConnectorCamera,OutputConnectorDummy>  my_streamlib;
+  StreamLibGstreamerDesktop<VnnInputConnectorCamera,VnnOutputConnectorDummy>  my_streamlib;
 
   my_streamlib.init();
   my_streamlib.set_buffer_cb(dummy_callback);

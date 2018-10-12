@@ -25,8 +25,8 @@
 
 //#include "streamlib.h"
 #include "streamlibgstreamerdesktop.h"
-#include "inputconnectorfile.h"
-#include "outputconnectordummy.h"
+#include "vnninputconnectorfile.h"
+#include "vnnoutputconnectordummy.h"
 #include <iostream>
 #include <chrono>
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   frame_counter=0;
   std::chrono::time_point<std::chrono::system_clock> start, end;
 
-  StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>  my_streamlib;
+  StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>  my_streamlib;
 
   my_streamlib._input.set_filepath(video_path);
   my_streamlib.init();

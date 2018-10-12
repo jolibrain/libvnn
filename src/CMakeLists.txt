@@ -11,21 +11,21 @@ if (GSTREAMER_FOUND)
 endif()
 
 set(vnn_SOURCES  vnnvideostream.h
-                    inputconnectorstrategy.h
-		    inputconnectorcamera.h
-		    inputconnectorcamera.cc
-		    inputconnectorcameratx2.h
-		    inputconnectorcameratx2.cc
-		    inputconnectorfile.h
-		    inputconnectorfile.cc
-		    inputconnectorfiletx2.h
-		    inputconnectorfiletx2.cc
+                    vnninputconnectorstrategy.h
+		    vnninputconnectorcamera.h
+		    vnninputconnectorcamera.cc
+		    vnninputconnectorcameratx2.h
+		    vnninputconnectorcameratx2.cc
+		    vnninputconnectorfile.h
+		    vnninputconnectorfile.cc
+		    vnninputconnectorfiletx2.h
+		    vnninputconnectorfiletx2.cc
 		    streamlib.h
 		    streamlibgstreamerdesktop.h
 		    streamlibgstreamerdesktop.cc
-		    outputconnectorstrategy.h
-		    outputconnectordummy.h
-		    outputconnectordummy.cc
+		    vnnoutputconnectorstrategy.h
+		    vnnoutputconnectordummy.h
+		    vnnoutputconnectordummy.cc
 		    streamlibgstreamertx2.h
 		    streamlibgstreamertx2.cc
 		    )
@@ -35,4 +35,9 @@ add_library(vnn ${vnn_SOURCES})
 target_link_libraries(vnn ${OpenCV_LIBS})
 
 install(TARGETS vnn DESTINATION lib)
-install(FILES streamlib.h DESTINATION include)
+install(FILES streamlib.h
+	vnninputconnectorstrategy.h
+	vnninputconnectorfile.h
+	vnnoutputconnectordummy.h
+	streamlibgstreamerdesktop.h
+	DESTINATION include)

@@ -23,33 +23,26 @@
  * under the License
  */
 
-#ifndef INPUTCONNECTORFILE_H
-#define INPUTCONNECTORFILE_H
 
-#include "inputconnectorstrategy.h"
+#ifndef OUTPUTCONNECTORSTRATEGY_H
+#define OUTPUTCONNECTORSTRATEGY_H
 
 #include <string>
+
 namespace vnn
 {
-
-  class InputConnectorFile: public InputConnectorStrategy
+  class VnnOutputConnectorStrategy
   {
     public:
-      InputConnectorFile() {}
-      InputConnectorFile(const std::string & file_path, const int & duration_s)
-        : _file_path(file_path), _duration_s(duration_s) {}
-      ~InputConnectorFile() {}
+      VnnOutputConnectorStrategy() {}
+      ~VnnOutputConnectorStrategy() {}
 
-      void init() {};
-      void set_filepath(std::string &filepath) {
-        _file_path = filepath;
-      }
-
-
-      std::string get_input_stream();
-    std::string _file_path;
-    int _duration_s;
+      /**
+       * \brief return output command to apply to streamlib
+       */
+      std::string output_command();
   };
+
 
 
 }

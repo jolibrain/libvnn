@@ -30,9 +30,9 @@
 #include <cstdlib>
 
 #include <string.h>
-#include "inputconnectorcamera.h"
-#include "inputconnectorfile.h"
-#include "outputconnectordummy.h"
+#include "vnninputconnectorcamera.h"
+#include "vnninputconnectorfile.h"
+#include "vnnoutputconnectordummy.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <gst/pbutils/pbutils.h>
@@ -175,8 +175,8 @@ uncomment for debug purpose
         };
 
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::init()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::init()
     {
         GstBus *bus = NULL;
         GstElement *testsink = NULL;
@@ -242,8 +242,8 @@ uncomment for debug purpose
         return 0;
     };
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::run()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::run()
     {
 
         /* launching things */
@@ -258,13 +258,13 @@ uncomment for debug purpose
         return 0;
     }
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::stop()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::stop()
     {
         return 0;
     }
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-    void StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::set_buffer_cb(BufferCbFunc &buffercb)
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    void StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::set_buffer_cb(BufferCbFunc &buffercb)
     {
       this->_buffercb = buffercb;
       this->_gstreamer_sys->_buffercb = buffercb;
@@ -431,8 +431,8 @@ uncomment for debug purpose
 
 
 
-  template <class TInputConnectorStrategy, class TOutputConnectorStrategy>
-      int StreamLibGstreamerDesktop<TInputConnectorStrategy, TOutputConnectorStrategy>::discoverer()
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+      int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::discoverer()
       {
           CustomData data;
           GError *err = NULL;
@@ -486,8 +486,8 @@ uncomment for debug purpose
 
 
 
-template class StreamLibGstreamerDesktop<InputConnectorCamera, OutputConnectorDummy>;
-template class StreamLibGstreamerDesktop<InputConnectorFile, OutputConnectorDummy>;
+template class StreamLibGstreamerDesktop<VnnInputConnectorCamera, VnnOutputConnectorDummy>;
+template class StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>;
 
 }
 

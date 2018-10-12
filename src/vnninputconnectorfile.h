@@ -23,37 +23,35 @@
  * under the License
  */
 
-#ifndef INPUTCONNECTORCAMERATX2_H
-#define INPUTCONNECTORCAMERATX2_H
+#ifndef VNNINPUTCONNECTORFILE_H
+#define VNNINPUTCONNECTORFILE_H
 
-#include "inputconnectorstrategy.h"
+#include "vnninputconnectorstrategy.h"
 
-#include <cstdlib>
 #include <string>
-#include <sstream>
 namespace vnn
 {
 
-  class InputConnectorCameraTX2: public InputConnectorStrategy
+  class VnnInputConnectorFile: public VnnInputConnectorStrategy
   {
     public:
-      InputConnectorCameraTX2() {};
-      ~InputConnectorCameraTX2() {};
-      void init();
+      VnnInputConnectorFile() {}
+      VnnInputConnectorFile(const std::string & file_path, const int & duration_s)
+        : _file_path(file_path), _duration_s(duration_s) {}
+      ~VnnInputConnectorFile() {}
 
-      std::string get_input_stream() {
-        std::ostringstream input_stream;
-        int w = 4208;
-        int h = 3120;
-        input_stream
-          << "nvcamerasrc ! "
-          << "video/x-raw(memory:NVMM), width="<< w <<", height="<< h <<", framerate=30/1 ! ";
-
-        return input_stream.str();
+      void init() {};
+      void set_filepath(std::string &filepath) {
+        _file_path = filepath;
       }
+
+
+      std::string get_input_stream();
+    std::string _file_path;
+    int _duration_s;
   };
 
 
 }
-#endif // INPUTCONNECTORCAMERATX2_H
+#endif
 

@@ -22,39 +22,18 @@
  * specific language governing permissions and limitations
  * under the License
  */
+#include "vnninputconnectorfiletx2.h"
 
-#ifndef OUTPUTCONNECTORDUMMY_H
-#define OUTPUTCONNECTORDUMMY_H
+#include <sstream>
 
+namespace vnn {
 
-
-#include "outputconnectorstrategy.h"
-#include <string>
-#include <functional>
-
-namespace vnn
-{
-  typedef std::function<int (void)> SizeFunc;
-
-
-  class OutputConnectorDummy: public OutputConnectorStrategy
-  {
-    public:
-      OutputConnectorDummy(){}
-      OutputConnectorDummy(SizeFunc &func);
-      ~OutputConnectorDummy() {}
-
-      void init();
-      /**
-       * \brief return output command to apply to streamlib
-       */
-      std::string output_command();
-    protected:
-      SizeFunc _szfunc = nullptr;
-  };
-
-
-
+  std::string VnnInputConnectorFileTX2::get_input_stream() {
+    std::ostringstream input_stream;
+    input_stream
+      << "filesrc location=" << this->_file_path << " ! "
+      << this->_container <<  " !"
+      << this->_decoder;
+    return input_stream.str();
+  }
 }
-#endif
-

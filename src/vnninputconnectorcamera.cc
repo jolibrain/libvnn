@@ -23,14 +23,14 @@
  * under the License
  */
 
-#include "inputconnectorcamera.h"
+#include "vnninputconnectorcamera.h"
 #include <iostream>
 
 namespace vnn {
 
-    void InputConnectorCamera::init()
+    void VnnInputConnectorCamera::init()
     {
-      std::cout << "enter InputConnectorCamera::init \n";
+      std::cout << "enter VnnInputConnectorCamera::init \n";
     };
 
 }
