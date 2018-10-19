@@ -3,7 +3,7 @@ project(vnn C CXX)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 #list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
+set(CMAKE_BUILD_TYPE Debug)
 
 
 #main library, main & tests

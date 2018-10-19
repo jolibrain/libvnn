@@ -38,14 +38,11 @@
 #include <gst/pbutils/pbutils.h>
 #include <iostream>
 #include <sstream>
+#include <queue>
+#include <mutex>
 
 
 namespace vnn {
-  struct node {
-    char *key;
-    char *value;
-    struct node *next;
-  };
 
   struct gstreamer_sys_t
   {
@@ -54,10 +51,15 @@ namespace vnn {
     std::chrono::time_point<std::chrono::system_clock> timestamp;
     BufferCbFunc _buffercb;
     std::atomic<unsigned long> average_fps;
+    std::queue<long int> decoded_frames;
+    unsigned long max_videoframe_buffer;
+    unsigned long idx_videoframe_buffer;
   };
 
 
+    static std::queue<cv::Mat> static_decoded_frames;
     static long int frame_counter;
+    std::mutex g_queue_mutex;
 
   unsigned int moving_average(
       const unsigned int x_average,
@@ -95,6 +97,9 @@ namespace vnn {
         unsigned int average = _gstreamer_sys->average_fps;
         int width, height;
         char* dump_structure = new char;
+
+        cv::Mat imgbuf ;
+        cv::Mat rgbimgbuf ;
 
 
 
@@ -143,11 +148,20 @@ uncomment for debug purpose
           delete dump_structure ;
 
           _gstreamer_sys->_buffercb(width, height, map.data);
+          /* push new recieved frame to decoded frames queue */
+          imgbuf = cv::Mat(cv::Size(width, height), CV_8UC2, (char*)map.data, cv::Mat::AUTO_STEP);
+          rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+          cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGRA_YUY2);
+          g_queue_mutex.lock();
+          static_decoded_frames.push(cv::Mat());
+          rgbimgbuf.copyTo(static_decoded_frames.front());
+          g_queue_mutex.unlock();
+
 
           /* we don't need the appsink sample anymore */
           gst_buffer_unmap(buffer, &map);
           gst_sample_unref (sample);
-          if (frame_counter > 100) {
+          if (frame_counter > 1000) {
             return GST_FLOW_EOS;
           }
         }
@@ -259,8 +273,23 @@ uncomment for debug purpose
     }
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::run_async()
+    {
+
+        /* launching things */
+        this->_gstreamer_sys->timestamp = std::chrono::system_clock::now();
+        gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_PLAYING);
+        /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
+         * error occurs in the source or sink pipelines. */
+        frame_counter =0;
+        return 0;
+    }
+
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::stop()
     {
+        gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_NULL);
         return 0;
     }
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
@@ -269,6 +298,22 @@ uncomment for debug purpose
       this->_buffercb = buffercb;
       this->_gstreamer_sys->_buffercb = buffercb;
     }
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+        ::get_video_buffer(cv::Mat &video_buffer)
+    {
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
+      if (  _gstreamer_sys->decoded_frames.empty() )
+        return 0;
+
+     g_queue_mutex.lock();
+     video_buffer = static_decoded_frames.front();
+     static_decoded_frames.pop();
+     g_queue_mutex.unlock();
+     return _gstreamer_sys->decoded_frames.size();
+    }
+
 
   /* Structure to contain all our information, so we can pass it around */
   typedef struct _CustomData {

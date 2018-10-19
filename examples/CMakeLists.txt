@@ -48,3 +48,6 @@ target_link_libraries (file_desktop vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEP
 
 add_executable (file_tx2 file_tx2.cc)
 target_link_libraries (file_tx2 vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
+
+add_executable (file_desktop_async file_desktop_async.cc)
+target_link_libraries (file_desktop_async vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )

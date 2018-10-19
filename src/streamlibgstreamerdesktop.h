@@ -46,9 +46,11 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
       ~StreamLibGstreamerDesktop() {}
       int init();
       int run();
+      int run_async();
       int stop();
 
       void set_buffer_cb(BufferCbFunc &buffercb);
+      int get_video_buffer(cv::Mat &video_buffer);
       int discoverer();
       BufferCbFunc _buffercb = nullptr;
 
