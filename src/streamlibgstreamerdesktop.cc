@@ -304,14 +304,14 @@ uncomment for debug purpose
         ::get_video_buffer(cv::Mat &video_buffer)
     {
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
-      if (  _gstreamer_sys->decoded_frames.empty() )
+      if (  static_decoded_frames.empty() )
         return 0;
 
      g_queue_mutex.lock();
      video_buffer = static_decoded_frames.front();
      static_decoded_frames.pop();
      g_queue_mutex.unlock();
-     return _gstreamer_sys->decoded_frames.size();
+     return static_decoded_frames.size();
     }
 
 

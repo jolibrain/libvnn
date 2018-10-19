@@ -77,6 +77,7 @@ int main(int argc, char** argv)
   video_frame_count = my_streamlib.get_video_buffer(imgbuf);
   img_path << "/tmp/images/img" << frame_counter <<".jpg";
   std::cout << "img_path =" << img_path.str() << std::endl ;
+  std::cout << "video_frame_count =" << video_frame_count << std::endl ;
   imwrite(img_path.str(), imgbuf);
   frame_counter++;
   
@@ -85,6 +86,7 @@ int main(int argc, char** argv)
   video_frame_count = my_streamlib.get_video_buffer(imgbuf);
   img_path << "/tmp/images/img" << frame_counter <<".jpg";
   std::cout << "img_path =" << img_path.str() << std::endl ;
+  std::cout << "video_frame_count =" << video_frame_count << std::endl ;
   imwrite(img_path.str(), imgbuf);
   frame_counter++;
 
