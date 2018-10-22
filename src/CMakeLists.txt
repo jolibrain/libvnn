@@ -39,5 +39,6 @@ install(FILES streamlib.h
 	vnninputconnectorstrategy.h
 	vnninputconnectorfile.h
 	vnnoutputconnectordummy.h
+	vnnoutputconnectorstrategy.h
 	streamlibgstreamerdesktop.h
 	DESTINATION include)
