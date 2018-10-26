@@ -49,6 +49,13 @@ namespace vnn
         {  return 0;};
         TVnnInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
         TVnnOutputConnectorStrategy _output; /**< output connector strategy for passing results back to API. */
+
+        void set_max_video_buffer( const int  &max_video_buffer){
+            _max_video_buffer = max_video_buffer;
+        };
+
+      private:
+        int _max_video_buffer = 100;
     };
 /**
      * \brief sets the gradient function, if available.
