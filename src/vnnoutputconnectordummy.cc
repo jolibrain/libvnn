@@ -30,8 +30,6 @@
 
 namespace vnn {
 
-    VnnOutputConnectorDummy::VnnOutputConnectorDummy(SizeFunc &func)
-      :_szfunc(func){};
 
     void VnnOutputConnectorDummy::init()
     {
