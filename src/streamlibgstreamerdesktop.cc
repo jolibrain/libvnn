@@ -147,7 +147,7 @@ uncomment for debug purpose
           frame_counter++;
           delete dump_structure ;
 
-          _gstreamer_sys->_buffercb(width, height, map.data);
+          //_gstreamer_sys->_buffercb(width, height, map.data);
           /* push new recieved frame to decoded frames queue */
           imgbuf = cv::Mat(cv::Size(width, height), CV_8UC2, (char*)map.data, cv::Mat::AUTO_STEP);
           rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
