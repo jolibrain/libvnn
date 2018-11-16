@@ -149,9 +149,10 @@ uncomment for debug purpose
 
           //_gstreamer_sys->_buffercb(width, height, map.data);
           /* push new recieved frame to decoded frames queue */
-          imgbuf = cv::Mat(cv::Size(width, height), CV_8UC2, (char*)map.data, cv::Mat::AUTO_STEP);
           rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
-          cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGRA_YUY2);
+         // rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+          //cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGR_YUY2);
+          std::cout << "channels " << rgbimgbuf.channels() <<   std::endl;
           g_queue_mutex.lock();
           static_decoded_frames.push(cv::Mat());
           rgbimgbuf.copyTo(static_decoded_frames.front());

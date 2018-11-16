@@ -61,7 +61,7 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
        */
       /* these are the caps we are going to pass through the appsink */
       std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
+        "video/x-raw,width=300,height=300,format=RGB";
 
   };
 
