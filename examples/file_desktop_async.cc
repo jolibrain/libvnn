@@ -90,7 +90,7 @@ int main(int argc, char** argv)
   imwrite(img_path.str(), imgbuf);
   frame_counter++;
 
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  std::this_thread::sleep_for(std::chrono::seconds(30));
   end = std::chrono::system_clock::now();
   my_streamlib.stop();
 
