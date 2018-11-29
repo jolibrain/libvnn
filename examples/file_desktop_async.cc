@@ -46,7 +46,7 @@ BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
 
   imgbuf = cv::Mat(cv::Size(width, height), CV_8UC2, (char*)data, cv::Mat::AUTO_STEP);
   rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)data, cv::Mat::AUTO_STEP);
-  cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGRA_YUY2); 
+  cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGRA_YUY2);
   imwrite(img_path.str(), rgbimgbuf);
   frame_counter++;
 #endif
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   cv::Mat imgbuf ;
   int video_frame_count;
   std::ostringstream img_path;
-
+  bool leave = false;
   StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>  my_streamlib;
 
   my_streamlib._input.set_filepath(video_path);
@@ -73,24 +73,23 @@ int main(int argc, char** argv)
   start = std::chrono::system_clock::now();
   my_streamlib.run_async();
 
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  video_frame_count = my_streamlib.get_video_buffer(imgbuf);
-  img_path << "/tmp/images/img" << frame_counter <<".jpg";
-  std::cout << "img_path =" << img_path.str() << std::endl ;
-  std::cout << "video_frame_count =" << video_frame_count << std::endl ;
-  imwrite(img_path.str(), imgbuf);
-  frame_counter++;
-  
-  img_path.str("");
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  video_frame_count = my_streamlib.get_video_buffer(imgbuf);
-  img_path << "/tmp/images/img" << frame_counter <<".jpg";
-  std::cout << "img_path =" << img_path.str() << std::endl ;
-  std::cout << "video_frame_count =" << video_frame_count << std::endl ;
-  imwrite(img_path.str(), imgbuf);
-  frame_counter++;
 
-  std::this_thread::sleep_for(std::chrono::seconds(30));
+  while( leave == false)
+  {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    img_path.str("");
+    video_frame_count = my_streamlib.get_video_buffer(imgbuf);
+    img_path << "/tmp/images/img" << frame_counter <<".jpg";
+    std::cout << "img_path =" << img_path.str() << std::endl ;
+    std::cout << "video_frame_count =" << video_frame_count << std::endl ;
+    imwrite(img_path.str(), imgbuf);
+    frame_counter++;
+    if (frame_counter > 20)  leave = true;
+  }
+
+
+
+
   end = std::chrono::system_clock::now();
   my_streamlib.stop();
 

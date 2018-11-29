@@ -57,8 +57,7 @@ namespace vnn {
   };
 
 
-    static std::queue<cv::Mat> static_decoded_frames;
-    static long int frame_counter;
+    static std::deque<cv::Mat> static_decoded_frames;
     std::mutex g_queue_mutex;
 
   unsigned int moving_average(
@@ -142,29 +141,36 @@ uncomment for debug purpose
           dump_structure = gst_structure_to_string(structure);
           std::cout << "width =" << width << std::endl ;
           std::cout << "height =" << height << std::endl ;
+          delete dump_structure ;
           std::cout << "dump_structure: " << dump_structure << std::endl;
 #endif
-          frame_counter++;
-          delete dump_structure ;
 
           //_gstreamer_sys->_buffercb(width, height, map.data);
           /* push new recieved frame to decoded frames queue */
           rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
          // rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
           //cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGR_YUY2);
-          std::cout << "channels " << rgbimgbuf.channels() <<   std::endl;
+          
           g_queue_mutex.lock();
-          static_decoded_frames.push(cv::Mat());
+          static_decoded_frames.push_front(cv::Mat());
           rgbimgbuf.copyTo(static_decoded_frames.front());
           g_queue_mutex.unlock();
-
+          _gstreamer_sys->idx_videoframe_buffer ++;
+          if  ( static_decoded_frames.size() >= _gstreamer_sys->max_videoframe_buffer)
+          {
+            for (int i =0; i <=10; i++)
+            {
+              // Remove old elemennts
+              g_queue_mutex.lock();
+              static_decoded_frames.pop_back();
+              g_queue_mutex.unlock();
+            }
+          }
 
           /* we don't need the appsink sample anymore */
           gst_buffer_unmap(buffer, &map);
           gst_sample_unref (sample);
-          if (frame_counter > 1000) {
-            return GST_FLOW_EOS;
-          }
+
         }
         // std::cout << std::endl;
         return GST_FLOW_OK;
@@ -199,7 +205,7 @@ uncomment for debug purpose
         GError *error = nullptr;
         std::string launch_string;
         std::string input_stream;
-        Gstreamer_sys_t * _gstraemer_sys;
+        Gstreamer_sys_t * _gstreamer_sys;
 
         this->_input.init();
         this->_output.init();
@@ -253,6 +259,7 @@ uncomment for debug purpose
         g_signal_connect (testsink, "new-sample",
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
         gst_object_unref (testsink);
+        _gstreamer_sys->max_videoframe_buffer = this->_max_video_frame_buffer;
 
         return 0;
     };
@@ -266,7 +273,6 @@ uncomment for debug purpose
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_PLAYING);
         /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
          * error occurs in the source or sink pipelines. */
-        frame_counter =0;
         g_print ("Let's run!\n");
         g_main_loop_run (_gstreamer_sys->loop);
         g_print ("Going out\n");
@@ -282,7 +288,6 @@ uncomment for debug purpose
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_PLAYING);
         /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
          * error occurs in the source or sink pipelines. */
-        frame_counter =0;
         return 0;
     }
 
@@ -310,7 +315,7 @@ uncomment for debug purpose
 
      g_queue_mutex.lock();
      video_buffer = static_decoded_frames.front();
-     static_decoded_frames.pop();
+     static_decoded_frames.pop_front();
      g_queue_mutex.unlock();
      return static_decoded_frames.size();
     }
@@ -536,4 +541,3 @@ template class StreamLibGstreamerDesktop<VnnInputConnectorCamera, VnnOutputConne
 template class StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>;
 
 }
-

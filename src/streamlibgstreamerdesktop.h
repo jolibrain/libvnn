@@ -35,6 +35,7 @@
 
 namespace vnn
 {
+#define MAX_VIDEOFRAME_BUFFER 1000
 typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
 
@@ -63,6 +64,8 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
       std::string _video_caps =
         "video/x-raw,width=300,height=300,format=RGB";
 
+      unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
+
   };
 
 #if 0
@@ -78,4 +81,3 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
 }
 #endif
-
