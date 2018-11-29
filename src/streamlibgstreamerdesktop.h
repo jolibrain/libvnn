@@ -50,6 +50,7 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
       int run_async();
       int stop();
 
+      void set_scale_size( const int &width, const int &height);
       void set_buffer_cb(BufferCbFunc &buffercb);
       int get_video_buffer(cv::Mat &video_buffer);
       int discoverer();
@@ -62,9 +63,12 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
        */
       /* these are the caps we are going to pass through the appsink */
       std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=RGB";
+        "video/x-raw,format=RGB";
 
       unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
+
+
+      std::string output_caps();
 
   };
 
