@@ -228,7 +228,8 @@ uncomment for debug purpose
         << input_stream << " ! "
         << " videoscale !"
         << " videoconvert !"
-        << " appsink caps=" << StreamLibGstreamerDesktop::_video_caps.c_str()
+        << " appsink caps=" << StreamLibGstreamerDesktop::output_caps().c_str()
+        //<< " appsink caps=" << StreamLibGstreamerDesktop::_video_caps.c_str()
         << " name=testsink";
 
         launch_string = launch_stream.str();
@@ -319,6 +320,36 @@ uncomment for debug purpose
      g_queue_mutex.unlock();
      return static_decoded_frames.size();
     }
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    std::string StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+        ::output_caps( )
+    {
+      std::ostringstream output;
+      output << "video/x-raw,format=RGB"
+      ",width=" << this->_scale_width<<
+      ",height="<< this->_scale_height;
+      return output.str();
+    }
+
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    void StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+        ::set_scale_size( const int &width, const int &height)
+    {
+      StreamLib<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+        ::set_scale_size(width, height);
+
+    
+
+      std::cout <<
+        "scale to: "
+        << this->_scale_width <<
+        "x"
+        << this->_scale_height <<
+        std::endl;
+    }
+
 
 
   /* Structure to contain all our information, so we can pass it around */

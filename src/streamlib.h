@@ -45,6 +45,8 @@ namespace vnn
 
         int run()
         {  return 0;};
+        int run_async();
+
         int stop()
         {  return 0;};
         TVnnInputConnectorStrategy _input; /**< input connector strategy for channeling data in. */
@@ -53,9 +55,17 @@ namespace vnn
         void set_max_video_buffer( const int  &max_video_buffer){
             _max_video_buffer = max_video_buffer;
         };
+        void set_scale_size( const int &width, const int &height){
+          _scale_width = width;
+          _scale_height = height;
+        }
+      protected:
+        int _scale_width =300;
+        int _scale_height=300;
 
       private:
         int _max_video_buffer = 100;
+
     };
 /**
      * \brief sets the gradient function, if available.
