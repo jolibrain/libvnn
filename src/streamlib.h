@@ -31,6 +31,7 @@
 namespace vnn
 {
 
+#define MAX_VIDEOFRAME_BUFFER 1000
   typedef std::function<int (int, int, unsigned char * )> BufferCbFunc;
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
@@ -64,7 +65,7 @@ namespace vnn
         int _scale_height=300;
 
       private:
-        int _max_video_buffer = 100;
+        int _max_video_buffer = MAX_VIDEOFRAME_BUFFER;
 
     };
 /**

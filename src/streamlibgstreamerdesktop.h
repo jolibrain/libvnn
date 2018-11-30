@@ -35,7 +35,6 @@
 
 namespace vnn
 {
-#define MAX_VIDEOFRAME_BUFFER 1000
 typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
 

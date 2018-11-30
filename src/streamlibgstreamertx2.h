@@ -28,10 +28,17 @@
 #define STREAMLIBGSTREAMERTX2_H
 
 #include <string>
+#include <atomic>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+
 #include "streamlib.h"
 
 namespace vnn
 {
+
+  typedef struct gstreamer_sys_t Gstreamer_sys_t;
+
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     class StreamLibGstreamerTX2: public StreamLib<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
   {
@@ -40,19 +47,27 @@ namespace vnn
       ~StreamLibGstreamerTX2() {}
       int init();
       int run();
-      void set_buffer_cb(BufferCbFunc &buffercb);
-      BufferCbFunc _buffercb = nullptr;
+      int run_async();
+      int stop();
 
-     int stop();
+      void set_scale_size( const int &width, const int &height);
+      int get_video_buffer(cv::Mat &video_buffer);
+
+      BufferCbFunc _buffercb = nullptr;
+      void set_buffer_cb(BufferCbFunc &buffercb);
 
     private:
 
+      Gstreamer_sys_t *_gstreamer_sys;
       /* pipe to reproduct
        * gst-launch -v videotestsrc ! video/x-raw,width=320,height=240,format=UYVY ! xvimagesink
        */
       /* these are the caps we are going to pass through the appsink */
       std::string _video_caps =
-        "video/x-raw,width=300,height=300,format=YUY2";
+        "video/x-raw,format=RGB";
+      unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
+
+
   };
 
 
