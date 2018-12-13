@@ -51,3 +51,6 @@ target_link_libraries (file_tx2 vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
 
 add_executable (file_desktop_async file_desktop_async.cc)
 target_link_libraries (file_desktop_async vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
+
+add_executable (discoverer discoverer.cc)
+target_link_libraries (discoverer vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )

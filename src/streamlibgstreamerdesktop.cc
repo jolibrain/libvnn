@@ -54,6 +54,8 @@ namespace vnn {
     std::queue<long int> decoded_frames;
     unsigned long max_videoframe_buffer;
     unsigned long idx_videoframe_buffer;
+    int width;
+    int height;
   };
 
 
@@ -80,6 +82,101 @@ namespace vnn {
         std::cout << "cb map.size =  " << size <<  std::endl;
         std::cout << "cb map.data =  " <<  static_cast<void*>(data) << std::endl;
       return 0;
+    }
+
+  static gboolean print_field (GQuark field, const GValue * value, gpointer pfx) {
+    gchar *str = gst_value_serialize (value);
+
+    g_print ("%s  %15s: %s\n", (gchar *) pfx, g_quark_to_string (field), str);
+    g_free (str);
+    return TRUE;
+  }
+
+  static void print_caps (const GstCaps * caps, const gchar * pfx) {
+    guint i;
+
+    g_return_if_fail (caps != NULL);
+
+    if (gst_caps_is_any (caps)) {
+      g_print ("%sANY\n", pfx);
+      return;
+    }
+    if (gst_caps_is_empty (caps)) {
+      g_print ("%sEMPTY\n", pfx);
+      return;
+    }
+
+    for (i = 0; i < gst_caps_get_size (caps); i++) {
+      GstStructure *structure = gst_caps_get_structure (caps, i);
+
+      g_print ("%s%s\n", pfx, gst_structure_get_name (structure));
+      g_print ("%s%s\n", (gchar *) pfx, g_quark_to_string (gst_structure_get_name_id(structure)));
+      gst_structure_foreach (structure, print_field, (gpointer) pfx);
+    }
+  }
+
+  static void detect_size (const GstCaps * caps, gpointer data) {
+    gint width, height;
+    GstStructure *structure;
+    std::string structure_name;
+    Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+
+    g_return_if_fail (caps != NULL);
+
+    if (gst_caps_is_any (caps)) {
+      g_print ("Ouuuups ANY\n");
+      return;
+    }
+    if (gst_caps_is_empty (caps)) {
+      g_print ("Ouuuups EMPTY\n");
+      return;
+    }
+
+    g_return_if_fail (gst_caps_is_fixed (caps));
+    structure = gst_caps_get_structure (caps, 0);
+    structure_name = gst_structure_get_name(structure);
+
+    if ( structure_name.compare("video/x-raw") == 0)
+    {
+      if (!gst_structure_get_int (structure, "width", &width) ||
+          !gst_structure_get_int (structure, "height", &height)) {
+        g_print ("No width/height available\n");
+        return;
+      }
+      _gstreamer_sys->width = width;
+      _gstreamer_sys->height = height;
+
+      g_print ("The video size of this set of capabilities is %dx%d\n",
+          width, height);
+    }
+  }
+
+  static void
+    on_new_pad (GstElement *element,
+        GstPad     *pad,
+        gpointer    data)
+    {
+      gchar *name;
+      GstCaps *caps = NULL;
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+
+      name = gst_pad_get_name (pad);
+      g_print ("A new pad %s was created\n", name);
+
+      /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
+      caps = gst_pad_get_current_caps (pad);
+      if (!caps)
+        caps = gst_pad_query_caps (pad, NULL);
+
+      /* Print and free */
+      g_print ("Caps for the %s pad:\n", name);
+      print_caps (caps, "      ");
+      detect_size(caps, _gstreamer_sys);
+      gst_caps_unref (caps);
+      g_free (name);
+
+      /* here, you would setup a new pad link for the newly created pad */
+
     }
 
     static GstFlowReturn on_new_sample_from_sink (GstElement * elt, gpointer data)
@@ -200,7 +297,7 @@ uncomment for debug purpose
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::init()
     {
         GstBus *bus = NULL;
-        GstElement *testsink = NULL;
+        GstElement *testsink = NULL , *input_elt = NULL;
         std::ostringstream launch_stream;
         GError *error = nullptr;
         std::string launch_string;
@@ -259,6 +356,10 @@ uncomment for debug purpose
         g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", FALSE, NULL);
         g_signal_connect (testsink, "new-sample",
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
+
+        input_elt = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "decoder");
+        g_signal_connect (input_elt, "pad-added",
+                G_CALLBACK (on_new_pad), _gstreamer_sys);
         gst_object_unref (testsink);
         _gstreamer_sys->max_videoframe_buffer = this->_max_video_frame_buffer;
 

@@ -35,8 +35,8 @@ namespace vnn {
   std::string VnnInputConnectorFile::get_input_stream() {
     std::ostringstream input_stream;
     input_stream
-      << "filesrc location=" << this->_file_path << " ! "
-      << "decodebin ";
+      << "filesrc name=inputfile location=" << this->_file_path << " ! "
+      << "decodebin  name=decoder ";
     return input_stream.str();
   }
 }
