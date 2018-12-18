@@ -65,6 +65,7 @@ int main(int argc, char** argv)
   int video_frame_count;
   std::ostringstream img_path;
   bool leave = false;
+  int width, height;
   StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>  my_streamlib;
 
   my_streamlib._input.set_filepath(video_path);
@@ -73,6 +74,16 @@ int main(int argc, char** argv)
   my_streamlib.set_buffer_cb(dummy_callback);
   start = std::chrono::system_clock::now();
   my_streamlib.run_async();
+
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  width = my_streamlib.get_original_width();
+  height = my_streamlib.get_original_height();
+  std::cout
+    << "Original Video size = "
+    << width
+    << "x"
+    << height
+    << std::endl ;
 
 
   while( leave == false)
