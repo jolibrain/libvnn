@@ -40,6 +40,7 @@
 #include <sstream>
 #include <queue>
 #include <mutex>
+#include <thread>
 
 
 namespace vnn {
@@ -175,7 +176,6 @@ namespace vnn {
 
       /* Print and free */
       g_print ("Caps for the %s pad:\n", name);
-      print_caps (caps, "      ");
       detect_size(caps, _gstreamer_sys);
       gst_caps_unref (caps);
       g_free (name);
@@ -608,6 +608,12 @@ namespace vnn {
     {
 
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
+      if  (_gstreamer_sys->width == 0)
+        {
+          //sleep a bit for video size
+
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
       return _gstreamer_sys->width;
     }
 
@@ -615,7 +621,13 @@ namespace vnn {
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
     ::get_original_height()
     {
+      if  (_gstreamer_sys->height == 0)
+        {
+          //sleep a bit for video size
 
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+ 
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
       return _gstreamer_sys->height;
     }
