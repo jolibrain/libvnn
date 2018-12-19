@@ -40,6 +40,7 @@
 #include <sstream>
 #include <queue>
 #include <mutex>
+#include <thread>
 
 
 namespace vnn {
@@ -54,6 +55,8 @@ namespace vnn {
     std::queue<long int> decoded_frames;
     unsigned long max_videoframe_buffer;
     unsigned long idx_videoframe_buffer;
+    int width=0;
+    int height=0;
   };
 
 
@@ -82,6 +85,105 @@ namespace vnn {
       return 0;
     }
 
+  static gboolean print_field (GQuark field, const GValue * value, gpointer pfx) {
+    gchar *str = gst_value_serialize (value);
+
+    g_print ("%s  %15s: %s\n", (gchar *) pfx, g_quark_to_string (field), str);
+    g_free (str);
+    return TRUE;
+  }
+
+  static void print_caps (const GstCaps * caps, const gchar * pfx) {
+    guint i;
+
+    g_return_if_fail (caps != NULL);
+
+    if (gst_caps_is_any (caps)) {
+      g_print ("%sANY\n", pfx);
+      return;
+    }
+    if (gst_caps_is_empty (caps)) {
+      g_print ("%sEMPTY\n", pfx);
+      return;
+    }
+
+    for (i = 0; i < gst_caps_get_size (caps); i++) {
+      GstStructure *structure = gst_caps_get_structure (caps, i);
+
+      g_print ("%s%s\n", pfx, gst_structure_get_name (structure));
+      g_print ("%s%s\n", (gchar *) pfx, g_quark_to_string (gst_structure_get_name_id(structure)));
+      gst_structure_foreach (structure, print_field, (gpointer) pfx);
+    }
+  }
+
+  static void detect_size (const GstCaps * caps, gpointer data) {
+    gint width, height;
+    GstStructure *structure;
+    std::string structure_name;
+    Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+
+    g_return_if_fail (caps != NULL);
+
+    if (gst_caps_is_any (caps)) {
+      g_print ("Ouuuups ANY\n");
+      return;
+    }
+    if (gst_caps_is_empty (caps)) {
+      g_print ("Ouuuups EMPTY\n");
+      return;
+    }
+
+    g_return_if_fail (gst_caps_is_fixed (caps));
+    structure = gst_caps_get_structure (caps, 0);
+    structure_name = gst_structure_get_name(structure);
+
+    if ( structure_name.compare("video/x-raw") == 0)
+    {
+      if (!gst_structure_get_int (structure, "width", &width) ||
+          !gst_structure_get_int (structure, "height", &height)) {
+        g_print ("No width/height available\n");
+        return;
+      }
+
+      g_queue_mutex.lock();
+      _gstreamer_sys->width = width;
+      _gstreamer_sys->height = height;
+      g_queue_mutex.unlock();
+
+      g_print ("The video size of this set of capabilities is %dx%d\n",
+          width, height);
+    }
+  }
+
+  static void
+    on_new_pad (GstElement *element,
+        GstPad     *pad,
+        gpointer    data)
+    {
+
+      (void) element;
+      gchar *name;
+      GstCaps *caps = NULL;
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+
+      name = gst_pad_get_name (pad);
+      g_print ("A new pad %s was created\n", name);
+
+      /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
+      caps = gst_pad_get_current_caps (pad);
+      if (!caps)
+        caps = gst_pad_query_caps (pad, NULL);
+
+      /* Print and free */
+      g_print ("Caps for the %s pad:\n", name);
+      detect_size(caps, _gstreamer_sys);
+      gst_caps_unref (caps);
+      g_free (name);
+
+      /* here, you would setup a new pad link for the newly created pad */
+
+    }
+
     static GstFlowReturn on_new_sample_from_sink (GstElement * elt, gpointer data)
     {
 
@@ -92,10 +194,7 @@ namespace vnn {
         GstBuffer *buffer;
         GstCaps   *caps;
         const GstStructure *structure;
-        unsigned int fps;
-        unsigned int average = _gstreamer_sys->average_fps;
         int width, height;
-        char* dump_structure = new char;
 
         cv::Mat imgbuf ;
         cv::Mat rgbimgbuf ;
@@ -105,20 +204,13 @@ namespace vnn {
         std::chrono::time_point<std::chrono::system_clock> timestamp;
         timestamp = std::chrono::system_clock::now();
 
-        auto elapsed_us = \
-            std::chrono::duration_cast<std::chrono::microseconds>(timestamp - _gstreamer_sys->timestamp).count();
 #if 0
         std::cout << "timestamp " << std::chrono::duration_cast<std::chrono::microseconds> (timestamp.time_since_epoch()).count() <<"\n" ;
         float f_fps =    (1.0/elapsed_us)*1000000;
         fps = static_cast<unsigned int>(f_fps);
         std::cout << "elapsed_us " << elapsed_us <<"\n" ;
 #endif
-        _gstreamer_sys->average_fps = moving_average(
-            average,
-            fps,
-            128
-            );
-        _gstreamer_sys->timestamp = timestamp;
+       _gstreamer_sys->timestamp = timestamp;
 
      //     std::cout << "AVG FPS " << _gstreamer_sys->average_fps <<"\n" ;
         /* get the sample from appsink */
@@ -136,21 +228,12 @@ namespace vnn {
             std::cout << "No width/height available\n" << std::endl;
             return GST_FLOW_OK ;
           }
-#if 0
-uncomment for debug purpose
-          dump_structure = gst_structure_to_string(structure);
-          std::cout << "width =" << width << std::endl ;
-          std::cout << "height =" << height << std::endl ;
-          delete dump_structure ;
-          std::cout << "dump_structure: " << dump_structure << std::endl;
-#endif
-
           //_gstreamer_sys->_buffercb(width, height, map.data);
           /* push new recieved frame to decoded frames queue */
           rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
          // rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
           //cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGR_YUY2);
-          
+
           g_queue_mutex.lock();
           static_decoded_frames.push_front(cv::Mat());
           rgbimgbuf.copyTo(static_decoded_frames.front());
@@ -178,29 +261,31 @@ uncomment for debug purpose
 
     /* called when we get a GstMessage from the source pipeline when we get EOS */
     static gboolean on_gst_bus (GstBus * bus, GstMessage * message,gpointer data)
-        {
-         GMainLoop *loop = (GMainLoop *) data;
-            switch (GST_MESSAGE_TYPE (message)) {
-                case GST_MESSAGE_EOS:
-                    g_print ("EOS \n");
-                    g_main_loop_quit (loop);
-                    break;
-                case GST_MESSAGE_ERROR:
-                    g_print ("Received error\n");
-                    g_main_loop_quit (loop);
-                    break;
-                default:
-                    break;
-            }
-            return TRUE;
-        };
+    {
+
+      (void) bus;
+      GMainLoop *loop = (GMainLoop *) data;
+      switch (GST_MESSAGE_TYPE (message)) {
+        case GST_MESSAGE_EOS:
+          g_print ("EOS \n");
+          g_main_loop_quit (loop);
+          break;
+        case GST_MESSAGE_ERROR:
+          g_print ("Received error\n");
+          g_main_loop_quit (loop);
+          break;
+        default:
+          break;
+      }
+      return TRUE;
+    };
 
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::init()
     {
         GstBus *bus = NULL;
-        GstElement *testsink = NULL;
+        GstElement *testsink = NULL , *input_elt = NULL;
         std::ostringstream launch_stream;
         GError *error = nullptr;
         std::string launch_string;
@@ -259,6 +344,10 @@ uncomment for debug purpose
         g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", FALSE, NULL);
         g_signal_connect (testsink, "new-sample",
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
+
+        input_elt = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "decoder");
+        g_signal_connect (input_elt, "pad-added",
+                G_CALLBACK (on_new_pad), _gstreamer_sys);
         gst_object_unref (testsink);
         _gstreamer_sys->max_videoframe_buffer = this->_max_video_frame_buffer;
 
@@ -310,7 +399,6 @@ uncomment for debug purpose
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
         ::get_video_buffer(cv::Mat &video_buffer)
     {
-      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
       if (  static_decoded_frames.empty() )
         return 0;
 
@@ -435,43 +523,45 @@ uncomment for debug purpose
   /* This function is called every time the discoverer has information regarding
    * one of the URIs we provided.*/
   static void on_discovered_cb (GstDiscoverer *discoverer, GstDiscovererInfo *info, GError *err, CustomData *data) {
-      GstDiscovererResult result;
-      const gchar *uri;
-      const GstTagList *tags;
-      GstDiscovererStreamInfo *sinfo;
+    (void) discoverer;
+    (void) data;
+    GstDiscovererResult result;
+    const gchar *uri;
+    const GstTagList *tags;
+    GstDiscovererStreamInfo *sinfo;
 
-      uri = gst_discoverer_info_get_uri (info);
-      result = gst_discoverer_info_get_result (info);
-      switch (result) {
-          case GST_DISCOVERER_URI_INVALID:
-              g_print ("Invalid URI '%s'\n", uri);
-              break;
-          case GST_DISCOVERER_ERROR:
-              g_print ("Discoverer error: %s\n", err->message);
-              break;
-          case GST_DISCOVERER_TIMEOUT:
-              g_print ("Timeout\n");
-              break;
-          case GST_DISCOVERER_BUSY:
-              g_print ("Busy\n");
-              break;
-          case GST_DISCOVERER_MISSING_PLUGINS:{
-                                                  const GstStructure *s;
-                                                  gchar *str;
+    uri = gst_discoverer_info_get_uri (info);
+    result = gst_discoverer_info_get_result (info);
+    switch (result) {
+      case GST_DISCOVERER_URI_INVALID:
+        g_print ("Invalid URI '%s'\n", uri);
+        break;
+      case GST_DISCOVERER_ERROR:
+        g_print ("Discoverer error: %s\n", err->message);
+        break;
+      case GST_DISCOVERER_TIMEOUT:
+        g_print ("Timeout\n");
+        break;
+      case GST_DISCOVERER_BUSY:
+        g_print ("Busy\n");
+        break;
+      case GST_DISCOVERER_MISSING_PLUGINS:{
+                                            const GstStructure *s;
+                                            gchar *str;
 
-                                                  s = gst_discoverer_info_get_misc (info);
-                                                  str = gst_structure_to_string (s);
+                                            s = gst_discoverer_info_get_misc (info);
+                                            str = gst_structure_to_string (s);
 
-                                                  g_print ("Missing plugins: %s\n", str);
-                                                  g_free (str);
-                                                  break;
-                                              }
-          case GST_DISCOVERER_OK:
-                                              g_print ("Discovered '%s'\n", uri);
-                                              break;
-      }
+                                            g_print ("Missing plugins: %s\n", str);
+                                            g_free (str);
+                                            break;
+                                          }
+      case GST_DISCOVERER_OK:
+                                          g_print ("Discovered '%s'\n", uri);
+                                          break;
+    }
 
-      if (result != GST_DISCOVERER_OK) {
+    if (result != GST_DISCOVERER_OK) {
           g_printerr ("This URI cannot be played\n");
           return;
       }
@@ -506,10 +596,41 @@ uncomment for debug purpose
   /* This function is called when the discoverer has finished examining
    * all the URIs we provided.*/
   static void on_finished_cb (GstDiscoverer *discoverer, CustomData *data) {
+    (void) discoverer;
       g_print ("Finished discovering\n");
 
       g_main_loop_quit (data->loop);
   }
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+    ::get_original_width()
+    {
+
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
+      if  (_gstreamer_sys->width == 0)
+        {
+          //sleep a bit for video size
+
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+      return _gstreamer_sys->width;
+    }
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+    ::get_original_height()
+    {
+      if  (_gstreamer_sys->height == 0)
+        {
+          //sleep a bit for video size
+
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+ 
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
+      return _gstreamer_sys->height;
+    }
 
 
 
