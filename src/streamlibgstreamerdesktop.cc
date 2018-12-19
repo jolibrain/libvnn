@@ -61,7 +61,7 @@ namespace vnn {
 
 
     static std::deque<cv::Mat> static_decoded_frames;
-    std::mutex g_queue_mutex;
+    static std::mutex g_queue_mutex;
 
   unsigned int moving_average(
       const unsigned int x_average,

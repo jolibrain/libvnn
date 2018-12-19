@@ -30,7 +30,8 @@ set(vnn_SOURCES  vnnvideostream.h
 		    streamlibgstreamertx2.cc
 		    )
 
-add_library(vnn ${vnn_SOURCES})
+	    add_library(vnn SHARED
+		    ${vnn_SOURCES})
 
 target_link_libraries(vnn ${OpenCV_LIBS})
 

@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 2.8.8)
-project(vnn C CXX)
+cmake_minimum_required(VERSION 3.5.1)
+project(vnn VERSION 0.5)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 #list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_BUILD_TYPE Debug)
+set (CMAKE_CXX_STANDARD 11)
 
 
 #main library, main & tests
@@ -34,10 +35,11 @@ endif()
 find_package( OpenCV REQUIRED )
 
 set (GSTREAMER_APP_LIB_DEPS -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0 -lgstpbutils-1.0)
-set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11 $(pkg-config --cflags --libs gstreamer-app-1.0)")
+#set (CMAKE_CXX_FLAGS "-g -Wall -Wextra -fPIC -std=c++11 $(pkg-config --cflags --libs gstreamer-app-1.0)")
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory (src)
 add_subdirectory (examples)
 
+configure_file(vnn.pc.in vnn.pc @ONLY)
 
