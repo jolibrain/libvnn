@@ -52,7 +52,7 @@ namespace vnn {
     unsigned long idx_videoframe_buffer;
   };
     static std::deque<cv::Mat> static_decoded_frames;
-    std::mutex g_queue_mutex;
+    static std::mutex g_queue_mutex;
 
 
     /* called when the appsink notifies us that there is a new buffer ready for
