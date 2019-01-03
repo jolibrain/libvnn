@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(vnn VERSION 0.5)
+include(GNUInstallDirs)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 #list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
