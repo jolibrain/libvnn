@@ -388,6 +388,17 @@ namespace vnn {
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_NULL);
         return 0;
     }
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    bool StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::
+    is_playing()
+    {
+        GstState gst_state;
+        gst_state = GST_STATE(this->_gstreamer_sys->source);
+        if ( gst_state == GST_STATE_PLAYING ) return true;
+        return false;
+    }
+
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     void StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::set_buffer_cb(BufferCbFunc &buffercb)
     {

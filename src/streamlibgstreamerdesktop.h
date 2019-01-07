@@ -55,6 +55,7 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
       int get_original_width();
       int get_original_height();
       int discoverer();
+      bool is_playing();
       BufferCbFunc _buffercb = nullptr;
 
     private:
