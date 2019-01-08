@@ -264,15 +264,22 @@ namespace vnn {
     {
 
       (void) bus;
-      GMainLoop *loop = (GMainLoop *) data;
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
       switch (GST_MESSAGE_TYPE (message)) {
         case GST_MESSAGE_EOS:
           g_print ("EOS \n");
-          g_main_loop_quit (loop);
+          g_main_loop_quit (_gstreamer_sys->loop);
           break;
         case GST_MESSAGE_ERROR:
           g_print ("Received error\n");
-          g_main_loop_quit (loop);
+          g_main_loop_quit (_gstreamer_sys->loop);
+          break;
+        case GST_MESSAGE_STATE_CHANGED:
+          /* We are only interested in state-changed messages from the pipeline */
+            GstState old_state, new_state, pending_state;
+            gst_message_parse_state_changed (message, &old_state, &new_state, &pending_state);
+            g_print ("Pipeline state changed from %s to %s:\n",
+                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
           break;
         default:
           break;
@@ -334,7 +341,7 @@ namespace vnn {
         bus = gst_element_get_bus (_gstreamer_sys->source);
         gst_bus_add_watch (bus,
             (GstBusFunc) &on_gst_bus,
-            _gstreamer_sys->loop);
+            _gstreamer_sys);
         gst_object_unref (bus);
 
         /* we use appsink in push mode, it sends us a signal when data is available
@@ -393,10 +400,21 @@ namespace vnn {
     bool StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::
     is_playing()
     {
+        GstStateChangeReturn res;
         GstState gst_state;
-        gst_state = GST_STATE(this->_gstreamer_sys->source);
-        if ( gst_state == GST_STATE_PLAYING ) return true;
-        return false;
+        bool ret =false;
+#if 0
+        res = gst_element_get_state (this->_gstreamer_sys->source, &gst_state, NULL, GST_CLOCK_TIME_NONE);
+        g_print ("gst state %i pad:\n", gst_state);
+        switch (gst_state) {
+          case GST_STATE_PLAYING:
+            ret = true;
+            break;
+          default:
+            break;
+        }
+      #endif
+        return ret;
     }
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
