@@ -72,7 +72,7 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
        boost::thread g_main_loop_thread_;
 
       unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
-
+      bool init_done = false;
 
       std::string output_caps();
 

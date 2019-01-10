@@ -25,7 +25,7 @@ include_directories(${GSTREAMER_INCLUDE_DIR})
 message(STATUS "Gstreamer include dir = ${GSTREAMER_INCLUDE_DIR} ")
 message(STATUS "Gstreamer library = ${GSTREAMER_LIBRARY} ")
 
-FIND_PACKAGE( Boost 1.62 COMPONENTS thread REQUIRED )
+FIND_PACKAGE( Boost COMPONENTS thread REQUIRED )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
 if (USE_TX2)

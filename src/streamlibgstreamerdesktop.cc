@@ -367,7 +367,7 @@ namespace vnn {
            ::RunningMainLoop, this);
         gst_object_unref (bus);
 
-
+        this->init_done = true;
         return 0;
     };
 
@@ -423,6 +423,8 @@ namespace vnn {
         GstStateChangeReturn res;
         GstState gst_state;
         bool ret =false;
+        if (! this->init_done) return false;
+
         res = gst_element_get_state (this->_gstreamer_sys->source, &gst_state, NULL, GST_CLOCK_TIME_NONE);
         switch (gst_state) {
           case GST_STATE_PLAYING:
