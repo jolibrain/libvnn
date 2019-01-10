@@ -94,6 +94,8 @@ int main(int argc, char** argv)
     video_frame_count = my_streamlib->get_video_buffer(imgbuf);
     img_path << "/tmp/images/img" << frame_counter <<".jpg";
     std::cout << "img_path =" << img_path.str() << std::endl ;
+
+    std::cout << "is_playing  =" << my_streamlib->is_playing() << std::endl ;
     imwrite(img_path.str(), imgbuf);
     frame_counter++;
     if (frame_counter > 20)  leave = true;
@@ -105,6 +107,7 @@ int main(int argc, char** argv)
   end = std::chrono::system_clock::now();
   my_streamlib->stop();
 
+  std::cout << "is_playing  =" << my_streamlib->is_playing() << std::endl ;
   int elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>
 	  (end-start).count();
   std::time_t end_time = std::chrono::system_clock::to_time_t(end);
@@ -113,6 +116,8 @@ int main(int argc, char** argv)
 	  << "elapsed time: " << elapsed_seconds << "s\n";
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    std::cout << "is_playing  =" << my_streamlib->is_playing() << std::endl ;
   return 0;
 
 }

@@ -33,7 +33,6 @@ namespace vnn {
 
     void VnnOutputConnectorDummy::init()
     {
-      std::cout << "enter VnnOutputConnectorDummy::init \n";
     };
 
 

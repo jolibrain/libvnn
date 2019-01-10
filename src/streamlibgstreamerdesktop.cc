@@ -147,8 +147,8 @@ namespace vnn {
       _gstreamer_sys->height = height;
       g_queue_mutex.unlock();
 
-      g_print ("The video size of this set of capabilities is %dx%d\n",
-          width, height);
+      //g_print ("The video size of this set of capabilities is %dx%d\n",
+      //    width, height);
     }
   }
 
@@ -258,10 +258,10 @@ namespace vnn {
     static gboolean on_gst_bus (GstBus * bus, GstMessage * message,gpointer data)
     {
 
-      g_print ("on_gst_bus_signal \n");
-      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+     Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
       switch (GST_MESSAGE_TYPE (message)) {
         case GST_MESSAGE_EOS:
+
           g_print ("EOS \n");
           g_main_loop_quit (_gstreamer_sys->loop);
           break;
@@ -270,11 +270,18 @@ namespace vnn {
           g_main_loop_quit (_gstreamer_sys->loop);
           break;
         case GST_MESSAGE_STATE_CHANGED:
+            // DEBUG
+            //g_print ("on_gst_bus_signal  %s %s\n",
+            //    GST_MESSAGE_SRC_NAME(message),
+            //    GST_MESSAGE_TYPE_NAME(message)
+            //    );
+
           /* We are only interested in state-changed messages from the pipeline */
             GstState old_state, new_state, pending_state;
             gst_message_parse_state_changed (message, &old_state, &new_state, &pending_state);
-            g_print ("Pipeline state changed from %s to %s:\n",
-                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+            // DEBUG 
+            //g_print ("Pipeline state changed from %s to %s:\n",
+            //    gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
           break;
         default:
           break;
@@ -308,7 +315,7 @@ namespace vnn {
 
         input_stream = this->_input.get_input_stream();
 
-        std::cout << "input stream =  " << input_stream <<  std::endl;
+        //std::cout << "input stream =  " << input_stream <<  std::endl;
 
 
         launch_stream
@@ -321,10 +328,10 @@ namespace vnn {
 
         launch_string = launch_stream.str();
 
-        g_print("Using launch string: %s\n", launch_string.c_str());
+//        g_print("Using launch string: %s\n", launch_string.c_str());
 
         _gstreamer_sys->source = gst_parse_launch (launch_string.c_str(), &error);
-         g_print( "pipeline == %p\n", _gstreamer_sys->source);
+//         g_print( "pipeline == %p\n", _gstreamer_sys->source);
 
         if (_gstreamer_sys->source == NULL) {
             g_print ("Bad source\n");
@@ -342,14 +349,14 @@ namespace vnn {
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
 
         input_elt = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "decoder");
-        //g_signal_connect (input_elt, "pad-added",
-        //        G_CALLBACK (on_new_pad), _gstreamer_sys);
+        g_signal_connect (input_elt, "pad-added",
+                G_CALLBACK (on_new_pad), _gstreamer_sys);
         gst_object_unref (testsink);
         _gstreamer_sys->max_videoframe_buffer = this->_max_video_frame_buffer;
 
         /* to be notified of messages from this pipeline, mostly EOS */
         bus = gst_pipeline_get_bus(GST_PIPELINE(_gstreamer_sys->source));
-        g_print( "bus == %p\n", _gstreamer_sys->source);
+//        g_print( "bus == %p\n", _gstreamer_sys->source);
         gst_bus_add_watch (bus,
             (GstBusFunc) &on_gst_bus,
             _gstreamer_sys);
@@ -416,17 +423,16 @@ namespace vnn {
         GstStateChangeReturn res;
         GstState gst_state;
         bool ret =false;
-#if 0
         res = gst_element_get_state (this->_gstreamer_sys->source, &gst_state, NULL, GST_CLOCK_TIME_NONE);
-        g_print ("gst state %i pad:\n", gst_state);
         switch (gst_state) {
           case GST_STATE_PLAYING:
+            // DEBUG:
+            // g_print ("gst state %s pad:\n", gst_element_state_get_name(gst_state));
             ret = true;
             break;
           default:
             break;
         }
-      #endif
         return ret;
     }
 
@@ -469,15 +475,6 @@ namespace vnn {
     {
       StreamLib<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
         ::set_scale_size(width, height);
-
-    
-
-      std::cout <<
-        "scale to: "
-        << this->_scale_width <<
-        "x"
-        << this->_scale_height <<
-        std::endl;
     }
 
 
