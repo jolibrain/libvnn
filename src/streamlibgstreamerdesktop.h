@@ -30,6 +30,8 @@
 #include <chrono>
 #include "streamlib.h"
 #include <atomic>
+#include <boost/thread.hpp>
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -66,6 +68,8 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
       /* these are the caps we are going to pass through the appsink */
       std::string _video_caps =
         "video/x-raw,format=RGB";
+      void RunningMainLoop();
+       boost::thread g_main_loop_thread_;
 
       unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
 

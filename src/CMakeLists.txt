@@ -33,7 +33,7 @@ set(vnn_SOURCES  vnnvideostream.h
 add_library(vnn SHARED
 	${vnn_SOURCES})
 
-target_link_libraries(vnn ${OpenCV_LIBS})
+target_link_libraries(vnn ${OpenCV_LIBS} ${Boost_LIBRARIES})
 
 install(TARGETS vnn
 	LIBRARY	DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -56,7 +56,7 @@ BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
 int main(int argc, char** argv)
 {
   // set video patt given as argument
-  //std::string video_path = argv[1];
+  // std::string video_path = argv[1];
   std::string video_path = "/home/nicolas/dev/jolibrain/samples/samples/bbb_60.mkv";
   int duration =10;
   frame_counter=0;
@@ -66,18 +66,19 @@ int main(int argc, char** argv)
   std::ostringstream img_path;
   bool leave = false;
   int width, height;
-  StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>  my_streamlib;
+  StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>  *my_streamlib =
+  new StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>();
 
-  my_streamlib._input.set_filepath(video_path);
-  my_streamlib.set_scale_size(200,200);
-  my_streamlib.init();
-  my_streamlib.set_buffer_cb(dummy_callback);
+  my_streamlib->_input.set_filepath(video_path);
+  my_streamlib->set_scale_size(200,200);
+  my_streamlib->init();
+  my_streamlib->set_buffer_cb(dummy_callback);
   start = std::chrono::system_clock::now();
-  my_streamlib.run_async();
+  my_streamlib->run_async();
 
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  width = my_streamlib.get_original_width();
-  height = my_streamlib.get_original_height();
+  width = my_streamlib->get_original_width();
+  height = my_streamlib->get_original_height();
   std::cout
     << "Original Video size = "
     << width
@@ -90,10 +91,9 @@ int main(int argc, char** argv)
   {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     img_path.str("");
-    video_frame_count = my_streamlib.get_video_buffer(imgbuf);
+    video_frame_count = my_streamlib->get_video_buffer(imgbuf);
     img_path << "/tmp/images/img" << frame_counter <<".jpg";
     std::cout << "img_path =" << img_path.str() << std::endl ;
-    std::cout << "video_frame_count =" << video_frame_count << std::endl ;
     imwrite(img_path.str(), imgbuf);
     frame_counter++;
     if (frame_counter > 20)  leave = true;
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 
 
   end = std::chrono::system_clock::now();
-  my_streamlib.stop();
+  my_streamlib->stop();
 
   int elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>
 	  (end-start).count();

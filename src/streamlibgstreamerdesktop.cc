@@ -88,7 +88,6 @@ namespace vnn {
   static gboolean print_field (GQuark field, const GValue * value, gpointer pfx) {
     gchar *str = gst_value_serialize (value);
 
-    g_print ("%s  %15s: %s\n", (gchar *) pfx, g_quark_to_string (field), str);
     g_free (str);
     return TRUE;
   }
@@ -110,8 +109,6 @@ namespace vnn {
     for (i = 0; i < gst_caps_get_size (caps); i++) {
       GstStructure *structure = gst_caps_get_structure (caps, i);
 
-      g_print ("%s%s\n", pfx, gst_structure_get_name (structure));
-      g_print ("%s%s\n", (gchar *) pfx, g_quark_to_string (gst_structure_get_name_id(structure)));
       gst_structure_foreach (structure, print_field, (gpointer) pfx);
     }
   }
@@ -167,7 +164,6 @@ namespace vnn {
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
 
       name = gst_pad_get_name (pad);
-      g_print ("A new pad %s was created\n", name);
 
       /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
       caps = gst_pad_get_current_caps (pad);
@@ -175,7 +171,6 @@ namespace vnn {
         caps = gst_pad_query_caps (pad, NULL);
 
       /* Print and free */
-      g_print ("Caps for the %s pad:\n", name);
       detect_size(caps, _gstreamer_sys);
       gst_caps_unref (caps);
       g_free (name);
@@ -263,7 +258,7 @@ namespace vnn {
     static gboolean on_gst_bus (GstBus * bus, GstMessage * message,gpointer data)
     {
 
-      (void) bus;
+      g_print ("on_gst_bus_signal \n");
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
       switch (GST_MESSAGE_TYPE (message)) {
         case GST_MESSAGE_EOS:
@@ -329,6 +324,7 @@ namespace vnn {
         g_print("Using launch string: %s\n", launch_string.c_str());
 
         _gstreamer_sys->source = gst_parse_launch (launch_string.c_str(), &error);
+         g_print( "pipeline == %p\n", _gstreamer_sys->source);
 
         if (_gstreamer_sys->source == NULL) {
             g_print ("Bad source\n");
@@ -337,14 +333,7 @@ namespace vnn {
             return -1;
         }
 
-        /* to be notified of messages from this pipeline, mostly EOS */
-        bus = gst_element_get_bus (_gstreamer_sys->source);
-        gst_bus_add_watch (bus,
-            (GstBusFunc) &on_gst_bus,
-            _gstreamer_sys);
-        gst_object_unref (bus);
-
-        /* we use appsink in push mode, it sends us a signal when data is available
+                /* we use appsink in push mode, it sends us a signal when data is available
          * and we pull out the data in the signal callback. We want the appsink to
          * push as fast as it can, hence the sync=false */
         testsink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "testsink");
@@ -353,10 +342,24 @@ namespace vnn {
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
 
         input_elt = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "decoder");
-        g_signal_connect (input_elt, "pad-added",
-                G_CALLBACK (on_new_pad), _gstreamer_sys);
+        //g_signal_connect (input_elt, "pad-added",
+        //        G_CALLBACK (on_new_pad), _gstreamer_sys);
         gst_object_unref (testsink);
         _gstreamer_sys->max_videoframe_buffer = this->_max_video_frame_buffer;
+
+        /* to be notified of messages from this pipeline, mostly EOS */
+        bus = gst_pipeline_get_bus(GST_PIPELINE(_gstreamer_sys->source));
+        g_print( "bus == %p\n", _gstreamer_sys->source);
+        gst_bus_add_watch (bus,
+            (GstBusFunc) &on_gst_bus,
+            _gstreamer_sys);
+       
+       /// Run the main loop to receive messages from bus
+       g_main_loop_thread_ = boost::thread(
+           &StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+           ::RunningMainLoop, this);
+        gst_object_unref (bus);
+
 
         return 0;
     };
@@ -387,6 +390,16 @@ namespace vnn {
          * error occurs in the source or sink pipelines. */
         return 0;
     }
+
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    void StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+    ::RunningMainLoop()
+    {
+      GMainLoop* loop = g_main_loop_new(NULL, FALSE);
+       g_main_loop_run(loop);
+    }
+
 
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
