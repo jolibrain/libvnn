@@ -447,16 +447,22 @@ namespace vnn {
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
-        ::get_video_buffer(cv::Mat &video_buffer)
+    ::get_video_buffer(cv::Mat &video_buffer, long int &timestamp )
     {
       if (  static_decoded_frames.empty() )
         return 0;
+      gint64 len;
 
-     g_queue_mutex.lock();
-     video_buffer = static_decoded_frames.front();
-     static_decoded_frames.pop_front();
-     g_queue_mutex.unlock();
-     return static_decoded_frames.size();
+      if (gst_element_query_position (this->_gstreamer_sys->source, GST_FORMAT_TIME, &timestamp)
+          && gst_element_query_duration (this->_gstreamer_sys->source, GST_FORMAT_TIME, &len)) {
+        g_print ("Time: %ld  %" GST_TIME_FORMAT " / pipeline%" GST_TIME_FORMAT "\n",
+            timestamp, GST_TIME_ARGS (timestamp), GST_TIME_ARGS (len));
+      }
+      g_queue_mutex.lock();
+      video_buffer = static_decoded_frames.front();
+      static_decoded_frames.pop_front();
+      g_queue_mutex.unlock();
+      return static_decoded_frames.size();
     }
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>

@@ -53,7 +53,7 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
       void set_scale_size( const int &width, const int &height);
       void set_buffer_cb(BufferCbFunc &buffercb);
-      int get_video_buffer(cv::Mat &video_buffer);
+      int get_video_buffer(cv::Mat &video_buffer, long int  &timestamp);
       int get_original_width();
       int get_original_height();
       int discoverer();

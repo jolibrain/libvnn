@@ -56,7 +56,7 @@ BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
 int main(int argc, char** argv)
 {
   // set video patt given as argument
-  // std::string video_path = argv[1];
+  //std::string video_path = argv[1];
   std::string video_path = "/home/nicolas/dev/jolibrain/samples/samples/bbb_60.mkv";
   int duration =10;
   frame_counter=0;
@@ -66,6 +66,7 @@ int main(int argc, char** argv)
   std::ostringstream img_path;
   bool leave = false;
   int width, height;
+  long  int timestamp;
   StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>  *my_streamlib =
   new StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>();
 
@@ -76,7 +77,6 @@ int main(int argc, char** argv)
   start = std::chrono::system_clock::now();
   my_streamlib->run_async();
 
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   width = my_streamlib->get_original_width();
   height = my_streamlib->get_original_height();
   std::cout
@@ -91,10 +91,9 @@ int main(int argc, char** argv)
   {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     img_path.str("");
-    video_frame_count = my_streamlib->get_video_buffer(imgbuf);
+    video_frame_count = my_streamlib->get_video_buffer(imgbuf, timestamp);
     img_path << "/tmp/images/img" << frame_counter <<".jpg";
-    std::cout << "img_path =" << img_path.str() << std::endl ;
-
+    std::cout << "img_path =" << img_path.str() << "timestamp: " << ( long int ) timestamp <<  std::endl ;
     std::cout << "is_playing  =" << my_streamlib->is_playing() << std::endl ;
     imwrite(img_path.str(), imgbuf);
     frame_counter++;
