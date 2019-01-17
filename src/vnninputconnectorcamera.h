@@ -35,13 +35,21 @@ namespace vnn
   class VnnInputConnectorCamera: public VnnInputConnectorStrategy
   {
     public:
-      VnnInputConnectorCamera() {};
-      ~VnnInputConnectorCamera() {};
-      void init();
+      VnnInputConnectorCamera() {}
+      VnnInputConnectorCamera(const std::string & device, const int & duration_s)
+        : _device(device), _duration_s(duration_s) {}
+      ~VnnInputConnectorCamera() {}
 
-      std::string get_input_stream() {
-        return "v4l2src num_buffers=10 ! video/x-raw,format=YUY2,width=1280,height=720,framerate=10/1";
+      void init() {};
+      void set_device(std::string &device) {
+        _device = device;
       }
+
+      std::string get_input_stream();
+
+      std::string _device="/dev/video0";
+      int _duration_s;
+
   };
 
 
