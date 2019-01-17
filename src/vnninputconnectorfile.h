@@ -47,8 +47,8 @@ namespace vnn
 
 
       std::string get_input_stream();
-    std::string _file_path;
-    int _duration_s;
+      std::string _file_path;
+      int _duration_s;
   };
 
 

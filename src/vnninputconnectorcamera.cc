@@ -25,12 +25,16 @@
 
 #include "vnninputconnectorcamera.h"
 #include <iostream>
-
+#include <sstream>
 namespace vnn {
 
-    void VnnInputConnectorCamera::init()
-    {
-      std::cout << "enter VnnInputConnectorCamera::init \n";
+  std::string VnnInputConnectorCamera::get_input_stream() {
+    std::ostringstream input_stream;
+    input_stream
+      << "v4l2src name=inputcamera device="<< this->_device <<" ! "
+      << "autovideoconvert  name=decoder ";
+    return input_stream.str();
+
     };
 
 }

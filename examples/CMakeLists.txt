@@ -54,3 +54,6 @@ target_link_libraries (file_desktop_async vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_L
 
 add_executable (discoverer discoverer.cc)
 target_link_libraries (discoverer vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
+
+add_executable (webcam webcam.cc)
+target_link_libraries (webcam vnn ${CUDA_LIB_DEPS} ${GSTREAMER_APP_LIB_DEPS} )
