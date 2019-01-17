@@ -262,7 +262,12 @@ namespace vnn {
       switch (GST_MESSAGE_TYPE (message)) {
         case GST_MESSAGE_EOS:
 
-          g_print ("EOS \n");
+          g_print ("on_gst_bus_signal  %s %s\n",
+                GST_MESSAGE_SRC_NAME(message),
+                GST_MESSAGE_TYPE_NAME(message)
+          );
+
+          gst_element_set_state (_gstreamer_sys->source, GST_STATE_NULL);
           g_main_loop_quit (_gstreamer_sys->loop);
           break;
         case GST_MESSAGE_ERROR:
@@ -271,17 +276,13 @@ namespace vnn {
           break;
         case GST_MESSAGE_STATE_CHANGED:
             // DEBUG
-            //g_print ("on_gst_bus_signal  %s %s\n",
-            //    GST_MESSAGE_SRC_NAME(message),
-            //    GST_MESSAGE_TYPE_NAME(message)
-            //    );
+            /* We are only interested in state-changed messages from the pipeline */
+            // GstState old_state, new_state, pending_state;
+            // gst_message_parse_state_changed (message, &old_state, &new_state, &pending_state);
+            // g_print ("Pipeline state changed from old_state %s to new_state %s (pending_state :%s):\n",
+            //    gst_element_state_get_name (old_state),
+            //    gst_element_state_get_name (new_state),
 
-          /* We are only interested in state-changed messages from the pipeline */
-            GstState old_state, new_state, pending_state;
-            gst_message_parse_state_changed (message, &old_state, &new_state, &pending_state);
-            // DEBUG 
-            //g_print ("Pipeline state changed from %s to %s:\n",
-            //    gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
           break;
         default:
           break;
