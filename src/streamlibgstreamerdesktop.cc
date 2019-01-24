@@ -49,6 +49,7 @@ namespace vnn {
   {
     GMainLoop *loop;
     GstElement *source;
+    GstElement *fullsink;
     std::chrono::time_point<std::chrono::system_clock> timestamp;
     BufferCbFunc _buffercb;
     std::atomic<unsigned long> average_fps;
@@ -179,13 +180,30 @@ namespace vnn {
 
     }
 
+    static GstFlowReturn on_new_sample_from_fullsink (GstElement * elt, gpointer data) {
+        Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+        GstSample *sample=NULL;
+        GstBuffer *buffer;
+  
+        //sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
+        if (sample) {
+          buffer = gst_sample_get_buffer (sample);
+
+          g_print("total size of memory blocks: %i \n", gst_buffer_get_size(buffer));
+          g_print("number of memory blocks : %i \n", gst_buffer_n_memory(buffer));
+
+        }
+      return GST_FLOW_OK;
+    }
+
+
     static GstFlowReturn on_new_sample_from_sink (GstElement * elt, gpointer data)
     {
 
         /* TODO: may be here use static_cast ? */
         Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
 
-        GstSample *sample;
+        GstSample *sample = NULL;
         GstBuffer *buffer;
         GstCaps   *caps;
         const GstStructure *structure;
@@ -209,12 +227,21 @@ namespace vnn {
 
      //     std::cout << "AVG FPS " << _gstreamer_sys->average_fps <<"\n" ;
         /* get the sample from appsink */
-        sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
+        //sample = gst_app_sink_pull_sample (GST_APP_SINK (elt));
+
         if (sample) {
+
+          // g_print("%s", gst_structure_to_string(gst_sample_get_info(sample)));
+
+          const GstStructure *structure_sample  = gst_sample_get_info(sample);
+          const gchar * pfx = "    ";
+          if (structure_sample) gst_structure_foreach(structure_sample, print_field, (gpointer) pfx);
 
           caps = gst_sample_get_caps(sample);
           buffer = gst_sample_get_buffer (sample);
 
+          //g_print("total size of memory blocks: %i \n", gst_buffer_get_size(buffer));
+          //g_print("number of memory blocks : %i \n", gst_buffer_n_memory(buffer));
           GstMapInfo map;
           gst_buffer_map (buffer, &map, GST_MAP_READ);
           structure = gst_caps_get_structure (caps, 0);
@@ -295,7 +322,7 @@ namespace vnn {
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::init()
     {
         GstBus *bus = NULL;
-        GstElement *testsink = NULL , *input_elt = NULL;
+        GstElement *scalesink = NULL , *input_elt = NULL, *fullsink = NULL ;
         std::ostringstream launch_stream;
         GError *error = nullptr;
         std::string launch_string;
@@ -316,20 +343,20 @@ namespace vnn {
 
         input_stream = this->_input.get_input_stream();
 
-        //std::cout << "input stream =  " << input_stream <<  std::endl;
+        std::cout << "input stream =  " << input_stream <<  std::endl;
 
 
         launch_stream
-        << input_stream << " ! "
+        << input_stream << " ! tee  name=vnntee ! queue ! "
         << " videoscale !"
         << " videoconvert !"
         << " appsink caps=" << StreamLibGstreamerDesktop::output_caps().c_str()
-        //<< " appsink caps=" << StreamLibGstreamerDesktop::_video_caps.c_str()
-        << " name=testsink";
+        << " name=scalesink vnntee. ! queue ! autovideosink vnntee. !"
+        << " queue ! videoconvert ! appsink name=fullsink caps=video/x-raw,format=RGB ";
 
         launch_string = launch_stream.str();
 
-//        g_print("Using launch string: %s\n", launch_string.c_str());
+        g_print("Using launch string: %s\n", launch_string.c_str());
 
         _gstreamer_sys->source = gst_parse_launch (launch_string.c_str(), &error);
 //         g_print( "pipeline == %p\n", _gstreamer_sys->source);
@@ -344,15 +371,28 @@ namespace vnn {
                 /* we use appsink in push mode, it sends us a signal when data is available
          * and we pull out the data in the signal callback. We want the appsink to
          * push as fast as it can, hence the sync=false */
-        testsink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "testsink");
-        g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", FALSE, NULL);
-        g_signal_connect (testsink, "new-sample",
+        scalesink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "scalesink");
+        g_object_set (G_OBJECT (scalesink), "emit-signals", TRUE, "sync", FALSE, NULL);
+        g_signal_connect (scalesink, "new-sample",
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
+       // gst_app_sink_set_max_buffers(GST_APP_SINK (scalesink), this->_max_video_frame_buffer);
+        gst_app_sink_set_max_buffers(GST_APP_SINK (scalesink), 10);
+        gst_app_sink_set_drop(GST_APP_SINK (scalesink), TRUE);
+        gst_object_unref (scalesink);
+
+        fullsink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "fullsink");
+        g_object_set (G_OBJECT (fullsink), "emit-signals", TRUE, "sync", FALSE, NULL);
+        g_signal_connect (fullsink, "new-sample",
+                G_CALLBACK (on_new_sample_from_fullsink), _gstreamer_sys);
+        //gst_app_sink_set_max_buffers(GST_APP_SINK (fullsink), this->_max_video_frame_buffer);
+        gst_app_sink_set_max_buffers(GST_APP_SINK (fullsink), 10);
+        gst_app_sink_set_drop(GST_APP_SINK (fullsink), TRUE);
+        gst_object_unref (fullsink);
+
 
         input_elt = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "decoder");
         g_signal_connect (input_elt, "pad-added",
                 G_CALLBACK (on_new_pad), _gstreamer_sys);
-        gst_object_unref (testsink);
         _gstreamer_sys->max_videoframe_buffer = this->_max_video_frame_buffer;
 
         /* to be notified of messages from this pipeline, mostly EOS */
@@ -361,8 +401,7 @@ namespace vnn {
         gst_bus_add_watch (bus,
             (GstBusFunc) &on_gst_bus,
             _gstreamer_sys);
-       
-       /// Run the main loop to receive messages from bus
+        /// Run the main loop to receive messages from bus
        g_main_loop_thread_ = boost::thread(
            &StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
            ::RunningMainLoop, this);
@@ -450,20 +489,81 @@ namespace vnn {
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
     ::get_video_buffer(cv::Mat &video_buffer, long int &timestamp )
     {
-      if (  static_decoded_frames.empty() )
-        return 0;
-      gint64 len;
 
-      if (gst_element_query_position (this->_gstreamer_sys->source, GST_FORMAT_TIME, &timestamp)
-          && gst_element_query_duration (this->_gstreamer_sys->source, GST_FORMAT_TIME, &len)) {
-        g_print ("Time: %ld  %" GST_TIME_FORMAT " / pipeline%" GST_TIME_FORMAT "\n",
-            timestamp, GST_TIME_ARGS (timestamp), GST_TIME_ARGS (len));
+      GstElement *fullsink = NULL ;
+      GstElement *scalesink = NULL ;
+      GstSample *fullsample=NULL;
+      GstSample *scalesample=NULL;
+
+      fullsink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "fullsink");
+      scalesink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "scalesink");
+      if (fullsink)
+      {
+        GstSample *sample=NULL;
+        fullsample = gst_app_sink_pull_sample (GST_APP_SINK (fullsink));
       }
-      g_queue_mutex.lock();
-      video_buffer = static_decoded_frames.front();
-      static_decoded_frames.pop_front();
-      g_queue_mutex.unlock();
-      return static_decoded_frames.size();
+
+      if (scalesink)
+      {
+        GstSample *sample=NULL;
+        GstBuffer *buffer;
+       scalesample = gst_app_sink_pull_sample (GST_APP_SINK (scalesink));
+      }
+
+      if (fullsample) {
+          GstBuffer *buffer;
+          cv::Mat rgbimgbuf ;
+          const GstStructure *structure;
+          GstMapInfo map;
+          GstCaps   *caps;
+          int width, height;
+          std::ostringstream img_path;
+
+          caps = gst_sample_get_caps(fullsample);
+          buffer = gst_sample_get_buffer (fullsample);
+          gst_buffer_map (buffer, &map, GST_MAP_READ);
+
+          g_print( "fullsink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
+            GST_TIME_ARGS (GST_BUFFER_PTS(buffer)));
+
+                   structure = gst_caps_get_structure (caps, 0);
+          if (!gst_structure_get_int (structure, "width", &width) ||
+              !gst_structure_get_int (structure, "height", &height)) {
+            std::cout << "No width/height available\n" << std::endl;
+            return -1 ;
+          }
+          rgbimgbuf = cv::Mat(
+              cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+
+          timestamp = GST_BUFFER_PTS(buffer);
+          img_path << "/tmp/images/full/img_" <<  timestamp <<".jpg";
+          imwrite(img_path.str(), rgbimgbuf);
+         }
+
+      if (scalesample)
+      {
+        GstBuffer *buffer;
+        const GstStructure *structure;
+        GstMapInfo map;
+        GstCaps   *caps;
+        int width, height;
+
+        caps = gst_sample_get_caps(scalesample);
+        buffer = gst_sample_get_buffer (scalesample);
+        gst_buffer_map (buffer, &map, GST_MAP_READ);
+
+        g_print( "scalesink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
+            GST_TIME_ARGS (GST_BUFFER_PTS(buffer)));
+        structure = gst_caps_get_structure (caps, 0);
+        if (!gst_structure_get_int (structure, "width", &width) ||
+            !gst_structure_get_int (structure, "height", &height)) {
+          std::cout << "No width/height available\n" << std::endl;
+          return -1 ;
+        }
+        video_buffer = cv::Mat(
+            cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+      }
+      return 10;
     }
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
