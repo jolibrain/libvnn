@@ -113,7 +113,7 @@ Execution boards:
 
  Predict script in examples/dede_integration
 
-The script create a video service and  run predict as quick as possible 1000 time.
+The script create a video service and  run predict as quick as possible 1000 times.
 
 
 
