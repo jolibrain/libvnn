@@ -347,14 +347,16 @@ namespace vnn {
 
 
         launch_stream
-        << input_stream << " ! tee  name=vnntee ! queue ! "
-        << " videoscale add_borders=true !"
+        << input_stream << " ! tee  name=vnntee ! "
+        << " queue !  videoscale add_borders=true !"
         << " videoconvert !"
         << " appsink caps=" << StreamLibGstreamerDesktop::output_caps().c_str()
         << " name=scalesink vnntee. !"
-        << " queue ! videoconvert ! appsink name=fullsink caps=video/x-raw,format=RGB ";
+        << " queue ! videoconvert ! appsink caps=video/x-raw,format=RGB name=fullsink  vnntee. !"
+        << " queue ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency !"
+        << " rtph264pay ! udpsink host=192.168.90.215 port=9000";
 
-        launch_string = launch_stream.str();
+        launch_string = launch_stream.str(); 
 
         g_print("Using launch string: %s\n", launch_string.c_str());
 
