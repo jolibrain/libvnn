@@ -348,10 +348,10 @@ namespace vnn {
 
         launch_stream
         << input_stream << " ! tee  name=vnntee ! queue ! "
-        << " videoscale !"
+        << " videoscale add_borders=true !"
         << " videoconvert !"
         << " appsink caps=" << StreamLibGstreamerDesktop::output_caps().c_str()
-        << " name=scalesink vnntee. ! queue ! autovideosink vnntee. !"
+        << " name=scalesink vnntee. !"
         << " queue ! videoconvert ! appsink name=fullsink caps=video/x-raw,format=RGB ";
 
         launch_string = launch_stream.str();
@@ -509,7 +509,7 @@ namespace vnn {
         GstBuffer *buffer;
        scalesample = gst_app_sink_pull_sample (GST_APP_SINK (scalesink));
       }
-
+    
       if (fullsample) {
           GstBuffer *buffer;
           cv::Mat rgbimgbuf ;
@@ -758,9 +758,7 @@ namespace vnn {
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
       if  (_gstreamer_sys->width == 0)
         {
-          //sleep a bit for video size
-
-          std::this_thread::sleep_for(std::chrono::seconds(1));
+          return 0;
         }
       return _gstreamer_sys->width;
     }
@@ -772,8 +770,7 @@ namespace vnn {
       if  (_gstreamer_sys->height == 0)
         {
           //sleep a bit for video size
-
-          std::this_thread::sleep_for(std::chrono::seconds(1));
+          return 0;
         }
  
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
