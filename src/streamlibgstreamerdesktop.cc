@@ -535,7 +535,7 @@ namespace vnn {
           rgbimgbuf = cv::Mat(
               cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
 
-          timestamp = GST_BUFFER_PTS(buffer);
+          timestamp = GST_BUFFER_PTS(buffer)/1000000 ;
           img_path << "/tmp/images/full/img_" <<  timestamp <<".jpg";
           imwrite(img_path.str(), rgbimgbuf);
          }
