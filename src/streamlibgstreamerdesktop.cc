@@ -354,7 +354,7 @@ namespace vnn {
         << " name=scalesink vnntee. !"
         << " queue ! videoconvert ! appsink caps=video/x-raw,format=RGB name=fullsink  vnntee. !"
         << " queue ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency !"
-        << " rtph264pay ! udpsink host=192.168.90.215 port=9000";
+        << " rtph264pay ! udpsink host=192.168.90.225 port=9000";
 
         launch_string = launch_stream.str(); 
 
