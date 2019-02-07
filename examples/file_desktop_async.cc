@@ -97,7 +97,8 @@ int main(int argc, char** argv)
     std::cout << "is_playing  =" << my_streamlib->is_playing() << std::endl ;
     imwrite(img_path.str(), imgbuf);
     frame_counter++;
-    if (frame_counter > 20)  leave = true;
+    if  ( not( my_streamlib->is_playing()))  leave = true;
+    imgbuf.release();
   }
 
 
