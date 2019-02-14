@@ -56,8 +56,8 @@ BufferCbFunc dummy_callback=[](int width , int height, unsigned char * data )
 int main(int argc, char** argv)
 {
   // set video patt given as argument
-  //std::string video_path = argv[1];
-  std::string video_path = "/home/nicolas/dev/jolibrain/samples/samples/bbb_60.mkv";
+  std::string video_path = argv[1];
+  //std::string video_path = "/home/nicolas/dev/jolibrain/samples/samples/bbb_60.mkv";
   int duration =10;
   frame_counter=0;
   std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -97,7 +97,8 @@ int main(int argc, char** argv)
     std::cout << "is_playing  =" << my_streamlib->is_playing() << std::endl ;
     imwrite(img_path.str(), imgbuf);
     frame_counter++;
-    if (frame_counter > 20)  leave = true;
+    if  ( not( my_streamlib->is_playing()))  leave = true;
+    imgbuf.release();
   }
 
 

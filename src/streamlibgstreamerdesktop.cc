@@ -347,14 +347,16 @@ namespace vnn {
 
 
         launch_stream
-        << input_stream << " ! tee  name=vnntee ! queue ! "
-        << " videoscale add_borders=true !"
+        << input_stream << " ! tee  name=vnntee ! "
+        << " queue !  videoscale add_borders=true !"
         << " videoconvert !"
         << " appsink caps=" << StreamLibGstreamerDesktop::output_caps().c_str()
         << " name=scalesink vnntee. !"
-        << " queue ! videoconvert ! appsink name=fullsink caps=video/x-raw,format=RGB ";
+        << " queue ! videoconvert ! appsink caps=video/x-raw,format=RGB name=fullsink  vnntee. !"
+        << " queue ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency !"
+        << " rtph264pay ! udpsink host=192.168.90.225 port=9000";
 
-        launch_string = launch_stream.str();
+        launch_string = launch_stream.str(); 
 
         g_print("Using launch string: %s\n", launch_string.c_str());
 
@@ -511,34 +513,37 @@ namespace vnn {
       }
     
       if (fullsample) {
-          GstBuffer *buffer;
-          cv::Mat rgbimgbuf ;
-          const GstStructure *structure;
-          GstMapInfo map;
-          GstCaps   *caps;
-          int width, height;
-          std::ostringstream img_path;
+        GstBuffer *buffer;
+        cv::Mat rgbimgbuf ;
+        const GstStructure *structure;
+        GstMapInfo map;
+        GstCaps   *caps;
+        int width, height;
+        std::ostringstream img_path;
 
-          caps = gst_sample_get_caps(fullsample);
-          buffer = gst_sample_get_buffer (fullsample);
-          gst_buffer_map (buffer, &map, GST_MAP_READ);
+        caps = gst_sample_get_caps(fullsample);
+        buffer = gst_sample_get_buffer (fullsample);
+        gst_buffer_map (buffer, &map, GST_MAP_READ);
 
-          g_print( "fullsink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
+        g_print( "fullsink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
             GST_TIME_ARGS (GST_BUFFER_PTS(buffer)));
 
-                   structure = gst_caps_get_structure (caps, 0);
-          if (!gst_structure_get_int (structure, "width", &width) ||
-              !gst_structure_get_int (structure, "height", &height)) {
-            std::cout << "No width/height available\n" << std::endl;
-            return -1 ;
-          }
-          rgbimgbuf = cv::Mat(
-              cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+        structure = gst_caps_get_structure (caps, 0);
+        if (!gst_structure_get_int (structure, "width", &width) ||
+            !gst_structure_get_int (structure, "height", &height)) {
+          std::cout << "No width/height available\n" << std::endl;
+          return -1 ;
+        }
+        rgbimgbuf = cv::Mat(
+            cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
 
-          timestamp = GST_BUFFER_PTS(buffer)/1000000 ;
-          img_path << "/tmp/images/full/img_" <<  timestamp <<".jpg";
-          imwrite(img_path.str(), rgbimgbuf);
-         }
+        timestamp = GST_BUFFER_PTS(buffer);
+        img_path << "/tmp/images/full/img_" <<  timestamp <<".jpg";
+        imwrite(img_path.str(), rgbimgbuf);
+        gst_buffer_unmap (buffer, &map);
+        gst_buffer_unref (buffer);
+        gst_caps_unref(caps);
+      }
 
       if (scalesample)
       {
@@ -562,6 +567,9 @@ namespace vnn {
         }
         video_buffer = cv::Mat(
             cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+        gst_buffer_unmap (buffer, &map);
+        gst_buffer_unref (buffer);
+        gst_caps_unref(caps);
       }
       return 10;
     }
