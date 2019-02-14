@@ -71,7 +71,7 @@ int main(int argc, char** argv)
   new StreamLibGstreamerDesktop<VnnInputConnectorFile, VnnOutputConnectorDummy>();
 
   my_streamlib->_input.set_filepath(video_path);
-  my_streamlib->set_scale_size(200,200);
+  my_streamlib->set_scale_size(300,300);
   my_streamlib->init();
   my_streamlib->set_buffer_cb(dummy_callback);
   start = std::chrono::system_clock::now();
