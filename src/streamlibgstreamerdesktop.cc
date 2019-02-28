@@ -450,9 +450,9 @@ namespace vnn {
         << "appsrc name=networksource ! decodebin ! "
         << " videoconvert name=appsrcvideoconvert ! "
         //<< " autovideosink";
-        << "x264enc pass=qual quantizer=20 tune=zerolatency !"
-        << " rtph264pay ! udpsink host=127.0.0.1 port=9000";
-
+        << "x264enc bitrate=30000 pass=qual quantizer=5 tune=zerolatency ! "
+        << " rtph264pay pt=127 ! udpsink host=127.0.0.1 port=9000";
+        // "matroskamux ! filesink location=/tmp/videotest_30000.mkv";
         launch_string = stream_sink.str();
 
        g_print("Using launch string: %s\n", launch_string.c_str());
