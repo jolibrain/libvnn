@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
   while( leave == false)
   {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+//    std::this_thread::sleep_for(std::chrono::seconds(1));
     img_path.str("");
     video_frame_count = my_streamlib->get_video_buffer(imgbuf, timestamp);
     img_path << "/tmp/images/img_" << ( long int ) timestamp <<".jpg";
