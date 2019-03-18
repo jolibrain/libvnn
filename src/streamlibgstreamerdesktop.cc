@@ -452,7 +452,7 @@ namespace vnn {
         << " videorate ! video/x-raw,framerate=1/1 ! "
         //<< " autovideosink";
         << " x264enc bitrate=30000 pass=qual quantizer=5 tune=zerolatency ! "
-        << " rtph264pay pt=127 ! udpsink host=192.168.90.222 port=9000";
+        << " rtph264pay pt=127 ! udpsink host=127.0.0.1 port=9000";
         // "matroskamux ! filesink location=/tmp/videotest_30000.mkv";
         launch_string = stream_sink.str();
 
