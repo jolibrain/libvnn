@@ -35,6 +35,7 @@
 #include "vnnoutputconnectordummy.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
+#include <gst/app/gstappsrc.h>
 #include <gst/pbutils/pbutils.h>
 #include <iostream>
 #include <sstream>
@@ -49,6 +50,7 @@ namespace vnn {
   {
     GMainLoop *loop;
     GstElement *source;
+    GstElement *network_stream;
     GstElement *fullsink;
     std::chrono::time_point<std::chrono::system_clock> timestamp;
     BufferCbFunc _buffercb;
@@ -281,6 +283,18 @@ namespace vnn {
         return GST_FLOW_OK;
     }
 
+    static void on_need_data (GstElement *appsrc, guint unused_size, gpointer user_data) {
+      g_print("need_data \n ");
+    }
+
+    static GstFlowReturn on_push_sample (GstAppSrc *appsrc,
+                                          GstSample *sample,
+                                          gpointer   user_data)
+    {
+
+      g_print("on_push_sample \n");
+    }
+
     /* called when we get a GstMessage from the source pipeline when we get EOS */
     static gboolean on_gst_bus (GstBus * bus, GstMessage * message,gpointer data)
     {
@@ -298,7 +312,7 @@ namespace vnn {
           g_main_loop_quit (_gstreamer_sys->loop);
           break;
         case GST_MESSAGE_ERROR:
-          g_print ("Received error\n");
+          g_print (" laucnh Received error\n");
           g_main_loop_quit (_gstreamer_sys->loop);
           break;
         case GST_MESSAGE_STATE_CHANGED:
@@ -317,13 +331,41 @@ namespace vnn {
       return TRUE;
     };
 
+    /* called when we get a GstMessage from the network stream pipeline when we get EOS */
+    static gboolean on_gst_bus_network_stream (GstBus * bus, GstMessage * message,gpointer data)
+    {
+
+     Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) data;
+      switch (GST_MESSAGE_TYPE (message)) {
+        case GST_MESSAGE_EOS:
+          g_print ("The source got dry\n");
+          // TODO: following line needed ?
+          gst_element_set_state (_gstreamer_sys->source, GST_STATE_NULL);
+          g_main_loop_quit (_gstreamer_sys->loop);
+          break;
+        case GST_MESSAGE_ERROR:
+          g_print ("app src bus Received error\n");
+          g_main_loop_quit (_gstreamer_sys->loop);
+          break;
+        case GST_MESSAGE_STATE_CHANGED:
+          break;
+        default:
+          break;
+      }
+      return TRUE;
+    };
+
+
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::init()
     {
         GstBus *bus = NULL;
         GstElement *scalesink = NULL , *input_elt = NULL, *fullsink = NULL ;
+        GstElement *networksource = NULL ;
         std::ostringstream launch_stream;
+        std::ostringstream stream_sink;
+
         GError *error = nullptr;
         std::string launch_string;
         std::string input_stream;
@@ -352,13 +394,12 @@ namespace vnn {
         << " videoconvert !"
         << " appsink caps=" << StreamLibGstreamerDesktop::output_caps().c_str()
         << " name=scalesink vnntee. !"
-        << " queue ! videoconvert ! appsink caps=video/x-raw,format=RGB name=fullsink  vnntee. !"
-        << " queue ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency !"
-        << " rtph264pay ! udpsink host=192.168.90.225 port=9000";
+        << " queue ! appsink name=fullsink ";
+        //<< " queue ! videoconvert ! x264enc pass=qual quantizer=20 tune=zerolatency !"
+        //<< " rtph264pay ! udpsink host=127.0.0.1 port=9000";
+        launch_string = launch_stream.str();
 
-        launch_string = launch_stream.str(); 
-
-        g_print("Using launch string: %s\n", launch_string.c_str());
+       g_print("Using launch string: %s\n", launch_string.c_str());
 
         _gstreamer_sys->source = gst_parse_launch (launch_string.c_str(), &error);
 //         g_print( "pipeline == %p\n", _gstreamer_sys->source);
@@ -403,11 +444,48 @@ namespace vnn {
         gst_bus_add_watch (bus,
             (GstBusFunc) &on_gst_bus,
             _gstreamer_sys);
-        /// Run the main loop to receive messages from bus
+        gst_object_unref (bus);
+
+        stream_sink
+        << "appsrc name=networksource ! decodebin ! "
+        << " videoconvert name=appsrcvideoconvert ! "
+        << " videorate ! video/x-raw,framerate=1/1 ! "
+        //<< " autovideosink";
+        << " x264enc bitrate=30000 pass=qual quantizer=5 tune=zerolatency ! "
+        << " rtph264pay pt=127 ! udpsink host=127.0.0.1 port=9000";
+        // "matroskamux ! filesink location=/tmp/videotest_30000.mkv";
+        launch_string = stream_sink.str();
+
+       g_print("Using launch string: %s\n", launch_string.c_str());
+        _gstreamer_sys->network_stream = gst_parse_launch (launch_string.c_str(), &error);
+        if (_gstreamer_sys->network_stream == NULL) {
+            g_print ("Bad network stream pipe\n");
+            g_main_loop_unref (_gstreamer_sys->loop);
+            g_free (_gstreamer_sys);
+            return -1;
+        }
+        networksource = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->network_stream), "networksource");
+        g_object_set (G_OBJECT (networksource), "emit-signals", TRUE,
+                                               "format",GST_FORMAT_TIME,
+            NULL);
+        g_signal_connect (networksource, "need-data",
+                G_CALLBACK (on_need_data), NULL);
+
+        g_signal_connect (networksource, "push-sample",
+                G_CALLBACK (on_push_sample), NULL);
+
+        bus = gst_pipeline_get_bus(GST_PIPELINE(_gstreamer_sys->network_stream));
+        //        g_print( "bus == %p\n", _gstreamer_sys->source);
+        gst_bus_add_watch (bus,
+            (GstBusFunc) &on_gst_bus_network_stream,
+            _gstreamer_sys);
+        gst_object_unref (bus);
+
+
+       /// Run the main loop to receive messages from bus
        g_main_loop_thread_ = boost::thread(
            &StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
            ::RunningMainLoop, this);
-        gst_object_unref (bus);
 
         this->init_done = true;
         return 0;
@@ -418,8 +496,8 @@ namespace vnn {
     {
 
         /* launching things */
-        this->_gstreamer_sys->timestamp = std::chrono::system_clock::now();
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_PLAYING);
+        gst_element_set_state (this->_gstreamer_sys->network_stream, GST_STATE_PLAYING);
         /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
          * error occurs in the source or sink pipelines. */
         g_print ("Let's run!\n");
@@ -433,8 +511,8 @@ namespace vnn {
     {
 
         /* launching things */
-        this->_gstreamer_sys->timestamp = std::chrono::system_clock::now();
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_PLAYING);
+        gst_element_set_state (this->_gstreamer_sys->network_stream, GST_STATE_PLAYING);
         /* let's run !, this loop will quit when the sink pipeline goes EOS or when an
          * error occurs in the source or sink pipelines. */
         return 0;
@@ -455,6 +533,7 @@ namespace vnn {
     int StreamLibGstreamerDesktop<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::stop()
     {
         gst_element_set_state (this->_gstreamer_sys->source, GST_STATE_NULL);
+        gst_element_set_state (this->_gstreamer_sys->network_stream, GST_STATE_NULL);
         return 0;
     }
 
@@ -497,54 +576,37 @@ namespace vnn {
       GstSample *fullsample=NULL;
       GstSample *scalesample=NULL;
 
+
       fullsink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "fullsink");
-      scalesink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "scalesink");
       if (fullsink)
       {
         GstSample *sample=NULL;
+        GstElement *source;
+
         fullsample = gst_app_sink_pull_sample (GST_APP_SINK (fullsink));
       }
 
+      if (fullsample) {
+        GstElement *source = NULL ;
+        GstFlowReturn ret;
+
+        source = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->network_stream), "networksource");
+        ret = gst_app_src_push_sample (GST_APP_SRC (source), fullsample);
+        gst_object_unref (source);
+
+        //gst_sample_unref (fullsample);
+      }
+
+      if (fullsink) gst_object_unref (fullsink);
+
+
+      scalesink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "scalesink");
       if (scalesink)
       {
         GstSample *sample=NULL;
         GstBuffer *buffer;
-       scalesample = gst_app_sink_pull_sample (GST_APP_SINK (scalesink));
+        scalesample = gst_app_sink_pull_sample (GST_APP_SINK (scalesink));
       }
-    
-      if (fullsample) {
-        GstBuffer *buffer;
-        cv::Mat rgbimgbuf ;
-        const GstStructure *structure;
-        GstMapInfo map;
-        GstCaps   *caps;
-        int width, height;
-        std::ostringstream img_path;
-
-        caps = gst_sample_get_caps(fullsample);
-        buffer = gst_sample_get_buffer (fullsample);
-        gst_buffer_map (buffer, &map, GST_MAP_READ);
-
-        g_print( "fullsink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
-            GST_TIME_ARGS (GST_BUFFER_PTS(buffer)));
-
-        structure = gst_caps_get_structure (caps, 0);
-        if (!gst_structure_get_int (structure, "width", &width) ||
-            !gst_structure_get_int (structure, "height", &height)) {
-          std::cout << "No width/height available\n" << std::endl;
-          return -1 ;
-        }
-        rgbimgbuf = cv::Mat(
-            cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
-
-        timestamp = GST_BUFFER_PTS(buffer);
-        img_path << "/tmp/images/full/img_" <<  timestamp <<".jpg";
-        imwrite(img_path.str(), rgbimgbuf);
-        gst_buffer_unmap (buffer, &map);
-        gst_buffer_unref (buffer);
-        gst_caps_unref(caps);
-      }
-
       if (scalesample)
       {
         GstBuffer *buffer;
@@ -553,24 +615,36 @@ namespace vnn {
         GstCaps   *caps;
         int width, height;
 
-        caps = gst_sample_get_caps(scalesample);
         buffer = gst_sample_get_buffer (scalesample);
-        gst_buffer_map (buffer, &map, GST_MAP_READ);
+        if (buffer) {
+          caps = gst_sample_get_caps(scalesample);
+          timestamp = GST_BUFFER_PTS(buffer);
+          gst_buffer_map (buffer, &map, GST_MAP_READ);
 
-        g_print( "scalesink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
-            GST_TIME_ARGS (GST_BUFFER_PTS(buffer)));
-        structure = gst_caps_get_structure (caps, 0);
-        if (!gst_structure_get_int (structure, "width", &width) ||
-            !gst_structure_get_int (structure, "height", &height)) {
-          std::cout << "No width/height available\n" << std::endl;
-          return -1 ;
+          structure = gst_caps_get_structure (caps, 0);
+          if (!gst_structure_get_int (structure, "width", &width) ||
+              !gst_structure_get_int (structure, "height", &height)) {
+            std::cout << "No width/height available\n" << std::endl;
+            return -1 ;
+          }
+
+          g_print( "scalesink time stamp %ld /  %" GST_TIME_FORMAT "\n", GST_BUFFER_PTS(buffer),
+              GST_TIME_ARGS (GST_BUFFER_PTS(buffer)));
+          video_buffer = cv::Mat(
+              cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
+          gst_buffer_unmap (buffer, &map);
+          gst_buffer_unref (buffer);
+          gst_caps_unref(caps);
+
+          //gst_sample_unref (scalesample);
         }
-        video_buffer = cv::Mat(
-            cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
-        gst_buffer_unmap (buffer, &map);
-        gst_buffer_unref (buffer);
-        gst_caps_unref(caps);
+        else
+        {
+          g_print( "No buffer \n");
+          return -1;
+        }
       }
+      if (scalesink) gst_object_unref (scalesink);
       return 10;
     }
 
