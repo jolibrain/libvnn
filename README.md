@@ -53,8 +53,7 @@ FPS = Video Framerate * Decoding ratio
 | bbb_60.mp4 |  338,4 Mb/s | 31 s            | 1.93            | 58    |
 
   
-#### Benchmark results on eris
-   
+#### Benchmark results on Core-i7   
 
 | File         | Bitrate     | Decoding time   |  Decoding ratio | FPS   |
 | ------     | --------    | --------------- |---------------  | ----- |
@@ -88,26 +87,6 @@ FPS = Video Framerate * Decoding ratio
   ouput: scaled 300x300 RGBA buffer
   output FPS: 30 (synced with cam)
   ouput: scaled 300x300 RGBA buffer
-## Goal
-Compare several video/mulimedia tools with accelerated GPU comput
-Tools to compare:
-- nvvl
-- deepstream
-- gstreamer on TX2
-
-Operation to compare:  **Video frame downsizing**
-
-Input:
-- 4K  / MP4 / duration? / Colorspace? **TBD**
-- 2K / MP4 / duration? / Colorspace?
-
-Output:
-- 300x300 / raw / RGB **TBD**
-
-Execution boards:
-- NVIDIA GTX 1080 (eris)
-- Jetson TX2
-- ???
 
 ## libvnn integration in dede
 
