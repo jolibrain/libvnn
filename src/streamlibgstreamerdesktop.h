@@ -51,7 +51,7 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
       int run_async();
       int stop();
 
-      void set_scale_size( const int &width, const int &height);
+      void set_scale_size(const int &width, const int &height);
       void set_buffer_cb(BufferCbFunc &buffercb);
       int get_video_buffer(cv::Mat &video_buffer, long int  &timestamp);
       int get_original_width();
@@ -76,6 +76,8 @@ typedef struct gstreamer_sys_t Gstreamer_sys_t;
 
       std::string output_caps();
 
+  public:
+      bool _scalesink_sync = false;
   };
 
 #if 0

@@ -255,7 +255,6 @@ namespace vnn {
           //_gstreamer_sys->_buffercb(width, height, map.data);
           /* push new recieved frame to decoded frames queue */
           rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
-         // rgbimgbuf = cv::Mat(cv::Size(width, height), CV_8UC3, (char*)map.data, cv::Mat::AUTO_STEP);
           //cvtColor(imgbuf, rgbimgbuf, CV_YUV2BGR_YUY2);
 
           g_queue_mutex.lock();
@@ -284,15 +283,14 @@ namespace vnn {
     }
 
     static void on_need_data (GstElement *appsrc, guint unused_size, gpointer user_data) {
-      g_print("need_data \n ");
+      //g_print("need_data \n ");
     }
 
     static GstFlowReturn on_push_sample (GstAppSrc *appsrc,
                                           GstSample *sample,
                                           gpointer   user_data)
     {
-
-      g_print("on_push_sample \n");
+      //g_print("on_push_sample \n");
     }
 
     /* called when we get a GstMessage from the source pipeline when we get EOS */
@@ -411,11 +409,11 @@ namespace vnn {
             return -1;
         }
 
-                /* we use appsink in push mode, it sends us a signal when data is available
+	/* we use appsink in push mode, it sends us a signal when data is available
          * and we pull out the data in the signal callback. We want the appsink to
          * push as fast as it can, hence the sync=false */
         scalesink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "scalesink");
-        g_object_set (G_OBJECT (scalesink), "emit-signals", TRUE, "sync", FALSE, NULL);
+        g_object_set (G_OBJECT (scalesink), "emit-signals", TRUE, "sync", _scalesink_sync ? TRUE : FALSE, NULL);
         g_signal_connect (scalesink, "new-sample",
                 G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
        // gst_app_sink_set_max_buffers(GST_APP_SINK (scalesink), this->_max_video_frame_buffer);

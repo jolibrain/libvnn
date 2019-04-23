@@ -204,7 +204,7 @@ namespace vnn {
          * and we pull out the data in the signal callback. We want the appsink to
          * push as fast as it can, hence the sync=false */
         testsink = gst_bin_get_by_name (GST_BIN (_gstreamer_sys->source), "testsink");
-        g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", FALSE, NULL);
+        g_object_set (G_OBJECT (testsink), "emit-signals", TRUE, "sync", _scalesink_sync ? TRUE : FALSE, NULL);
         g_signal_connect (testsink, "new-sample",
             G_CALLBACK (on_new_sample_from_sink), _gstreamer_sys);
         gst_object_unref (testsink);

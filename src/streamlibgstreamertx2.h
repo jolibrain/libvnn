@@ -67,7 +67,8 @@ namespace vnn
         "video/x-raw,format=RGB";
       unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
 
-
+  public:
+      bool _scalesink_sync = false;
   };
 
 

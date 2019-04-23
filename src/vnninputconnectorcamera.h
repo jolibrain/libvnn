@@ -47,7 +47,7 @@ namespace vnn
 
       std::string get_input_stream();
 
-      std::string _device="/dev/video0";
+      std::string _device="/dev/video0"; //TODO: make it configurable
       int _duration_s;
 
   };
