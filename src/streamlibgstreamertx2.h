@@ -51,8 +51,11 @@ namespace vnn
       int stop();
 
       void set_scale_size( const int &width, const int &height);
-      int get_video_buffer(cv::Mat &video_buffer);
-
+      int get_video_buffer(cv::Mat &video_buffer, long int &timestamp);
+      int get_original_width();
+      int get_original_height();
+      bool is_playing();
+      
       BufferCbFunc _buffercb = nullptr;
       void set_buffer_cb(BufferCbFunc &buffercb);
 
@@ -66,7 +69,8 @@ namespace vnn
       std::string _video_caps =
         "video/x-raw,format=RGB";
       unsigned long _max_video_frame_buffer = MAX_VIDEOFRAME_BUFFER;
-
+      bool init_done = false;
+      
   public:
       bool _scalesink_sync = false;
   };

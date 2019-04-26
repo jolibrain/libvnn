@@ -50,6 +50,8 @@ namespace vnn {
     std::queue<long int> decoded_frames;
     unsigned long max_videoframe_buffer;
     unsigned long idx_videoframe_buffer;
+    int width=0;
+    int height=0;
   };
     static std::deque<cv::Mat> static_decoded_frames;
     static std::mutex g_queue_mutex;
@@ -261,8 +263,9 @@ namespace vnn {
 
   template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
     int StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::
-    get_video_buffer(cv::Mat &video_buffer)
+    get_video_buffer(cv::Mat &video_buffer, long int &timestamp)
     {
+      (void)timestamp; //TODO
       Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
       if (  static_decoded_frames.empty() )
         return 0;
@@ -282,7 +285,55 @@ namespace vnn {
         ::set_scale_size(width, height);
     }
 
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+    ::get_original_width()
+    {
 
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
+      if  (_gstreamer_sys->width == 0)
+        {
+          return 0;
+        }
+      return _gstreamer_sys->width;
+    }
+
+  template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    int StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>
+    ::get_original_height()
+    {
+      if  (_gstreamer_sys->height == 0)
+        {
+          //sleep a bit for video size
+          return 0;
+        }
+ 
+      Gstreamer_sys_t *_gstreamer_sys = (Gstreamer_sys_t *) this->_gstreamer_sys;
+      return _gstreamer_sys->height;
+    }
+
+
+    template <class TVnnInputConnectorStrategy, class TVnnOutputConnectorStrategy>
+    bool StreamLibGstreamerTX2<TVnnInputConnectorStrategy, TVnnOutputConnectorStrategy>::
+    is_playing()
+    {
+        GstStateChangeReturn res;
+        GstState gst_state;
+        bool ret =false;
+        if (! this->init_done) return false;
+
+        res = gst_element_get_state (this->_gstreamer_sys->source, &gst_state, NULL, GST_CLOCK_TIME_NONE);
+        switch (gst_state) {
+          case GST_STATE_PLAYING:
+            // DEBUG:
+            // g_print ("gst state %s pad:\n", gst_element_state_get_name(gst_state));
+            ret = true;
+            break;
+          default:
+            break;
+        }
+        return ret;
+    }
 
 template class StreamLibGstreamerTX2<VnnInputConnectorCamera, VnnOutputConnectorDummy>;
 template class StreamLibGstreamerTX2<VnnInputConnectorFileTX2, VnnOutputConnectorDummy>;
